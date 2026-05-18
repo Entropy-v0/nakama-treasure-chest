@@ -1,0 +1,5 @@
+com/libreria/services/LibroService.class
+com/libreria/models/Libro.class
+com/libreria/controllers/LibroController.class
+com/libreria/repositories/LibroRepository.class
+com/libreria/GestionLibrosApplication.class
