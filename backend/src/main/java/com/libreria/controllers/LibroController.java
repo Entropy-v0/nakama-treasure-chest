@@ -1,78 +1,75 @@
 package com.libreria.controllers;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.libreria.models.Libro;
+import com.libreria.services.LibroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.libreria.models.Libro;
-import com.libreria.services.LibroService;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/libros")
 public class LibroController {
 
-    private final LibroService libroService;
-
     @Autowired
-    public LibroController(LibroService libroService) {
-        this.libroService = libroService;
-    }
+    private LibroService libroService;
 
-    @GetMapping
-    public List<Libro> obtenerTodos() {
-        return libroService.obtenerTodos();
-    }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Libro> obtenerPorId(@PathVariable Long id) {
-        Optional<Libro> libro = libroService.obtenerPorId(id);
-        return libro.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+    @PostMapping("/subir")
+    public ResponseEntity<?> subirLibro(
+            @RequestParam("file") MultipartFile archivo,
+            @RequestParam("titulo") String titulo,
+            @RequestParam("autor") String autor,
+            @RequestParam("usuarioId") Long usuarioId) {
+        
+        
+        if (archivo == null || archivo.isEmpty()) {
+            return new ResponseEntity<>("Error: El archivo PDF es estrictamente obligatorio.", HttpStatus.BAD_REQUEST);
+        }
 
-    @PostMapping
-    public ResponseEntity<?> crearLibro(@RequestBody Libro libro) {
         try {
-            Libro nuevoLibro = libroService.guardarLibro(libro);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoLibro);
+           
+            Libro libroGuardado = libroService.procesarYGuardarLibro(archivo, titulo, autor, usuarioId);
+            return new ResponseEntity<>(libroGuardado, HttpStatus.CREATED);
+            
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al escribir el archivo en el servidor: " + e.getMessage(), 
+                    HttpStatus.INTERNAL_SERVER_ERROR); 
         }
     }
 
+
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<Libro>> listarLibrosPorUsuario(@PathVariable Long usuarioId) {
+        List<Libro> libros = libroService.listarPorUsuario(usuarioId);
+        return new ResponseEntity<>(libros, HttpStatus.OK); // Status 200
+    }
+
+
     @PutMapping("/{id}")
-    public ResponseEntity<Libro> actualizarLibro(@PathVariable Long id, @RequestBody Libro libro) {
-        return libroService.obtenerPorId(id)
-                .map(libroExistente -> {
-                    libroExistente.setTitulo(libro.getTitulo());
-                    libroExistente.setAutor(libro.getAutor());
-                    libroExistente.setIsbn(libro.getIsbn());
-                    libroExistente.setPaginasTotales(libro.getPaginasTotales());
-                    libroExistente.setLeido(libro.isLeido());
-                    libroExistente.setCalificacion(libro.getCalificacion());
-                    libroExistente.setReseniaPersonal(libro.getReseniaPersonal());
-                    return ResponseEntity.ok(libroService.guardarLibro(libroExistente));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> actualizarMetadatosLibro(@PathVariable Long id, @RequestBody Libro datosNuevos) {
+        try {
+            Libro libroActualizado = libroService.actualizarLibro(id, datosNuevos);
+            return new ResponseEntity<>(libroActualizado, HttpStatus.OK); // Status 200
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al procesar la actualización: " + e.getMessage(), 
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarLibro(@PathVariable Long id) {
-        if (libroService.obtenerPorId(id).isPresent()) {
+        try {
             libroService.eliminarLibro(id);
-            return ResponseEntity.noContent().build();
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // Status 204 (Éxito, sin contenido que devolver)
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.notFound().build();
     }
 }

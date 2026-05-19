@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LibroRepository extends JpaRepository<Libro, Long> {
-    
+    List<Libro> findByUsuarioId(Long usuarioId);
+    List<Libro> findByUsuarioIdAndColeccionId(Long usuarioId, Long coleccionId);
 }
