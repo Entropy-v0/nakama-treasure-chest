@@ -1,9 +1,19 @@
 package com.libreria.models;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "usuarios")
@@ -34,7 +44,7 @@ public class Usuario {
     private List<Libro> libros = new ArrayList<>();
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Coleccion> colecciones = new ArrayList<>();
+    private List<Categoria> colecciones = new ArrayList<>();
 
     // ==========================================
     // CONSTRUCTORES
@@ -103,11 +113,11 @@ public class Usuario {
         this.libros = libros;
     }
 
-    public List<Coleccion> getColecciones() {
+    public List<Categoria> getColecciones() {
         return colecciones;
     }
 
-    public void setColecciones(List<Coleccion> colecciones) {
+    public void setColecciones(List<Categoria> colecciones) {
         this.colecciones = colecciones;
     }
 

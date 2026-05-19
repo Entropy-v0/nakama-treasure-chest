@@ -1,7 +1,22 @@
 package com.libreria.models;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;     
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+
 
 @Entity
 @Table(name = "libros")
@@ -53,7 +68,7 @@ public class Libro {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coleccion_id", nullable = true)
-    private Coleccion coleccion;
+    private Categoria coleccion;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -73,7 +88,7 @@ public class Libro {
 
     public Libro(Long id, String titulo, String autor, String rutaPdf, String rutaPortada, Long tamanioBytes, 
                  Integer paginaActual, String isbn, int paginasTotales, boolean leido, int calificacion, 
-                 String notaPersonal, LocalDateTime fechaSubida, Usuario usuario, Coleccion coleccion, Set<Etiqueta> etiquetas) {
+                 String notaPersonal, LocalDateTime fechaSubida, Usuario usuario, Categoria coleccion, Set<Etiqueta> etiquetas) {
         this.id = id;
         this.titulo = titulo;
         this.autor = autor;
@@ -150,9 +165,9 @@ public class Libro {
 
     public void setUsuario(Usuario usuario) {this.usuario = usuario;}
 
-    public Coleccion getColeccion() {return coleccion;}
+    public Categoria getColeccion() {return coleccion;}
 
-    public void setColeccion(Coleccion coleccion) {this.coleccion = coleccion;}
+    public void setColeccion(Categoria coleccion) {this.coleccion = coleccion;}
 
     public Set<Etiqueta> getEtiquetas() {return etiquetas;}
 
