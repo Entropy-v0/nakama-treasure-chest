@@ -7,18 +7,26 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies & Build
+# Dependencies & Build Outputs
 node_modules
 dist
 dist-ssr
-*.local
+.output
+.temp
+tmp
+coverage
 
-# Environment variables & secrets
+# Environment Variables & Secrets (CRÍTICO: Nunca subir credenciales)
 .env
-.env.*.local
+.env.*
+!.env.example
 application-dev.properties
+application.properties
 
-# Editor directories and files
+# Vercel & Deployment metadata
+.vercel
+
+# Editor & System Files
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
