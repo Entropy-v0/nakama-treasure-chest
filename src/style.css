@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* ===== Tailwind v4 Theme — Maps CSS variables to utility classes ===== */
+@theme inline {
+  --color-bg-base:      #0B0E0C;
+  --color-bg-surface:   #111512;
+  --color-bg-elevated:  #181E19;
+  --color-bg-card:      #1E2620;
+  --color-bg-input:     #141A15;
+
+  --color-green:        #3D7A55;
+  --color-green-light:  #5A9E72;
+  --color-green-dark:   #234A34;
+
+  --color-gold:         #C8960C;
+  --color-gold-dim:     #A67800;
+
+  --color-text-primary:   #F8FAF8;
+  --color-text-secondary: #9BADA0;
+  --color-text-muted:     #55706A;
+
+  --color-state-watching:   #4A9E6A;
+  --color-state-completed:  #C8960C;
+  --color-state-pending:    #5B8DD9;
+  --color-state-dropped:    #C0574A;
+  --color-state-paused:     #8B72C4;
+
+  --color-type-anime:   #D97B5A;
+  --color-type-manga:   #C89240;
+  --color-type-series:  #5B8DD9;
+  --color-type-movie:   #8B72C4;
+
+  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+:root {
+  /* ===== Nakama — Verde profundo + Blanco cálido ===== */
+
+  /* Fondos — negro casi puro con tinte verde muy sutil */
+  --bg-base:      #0B0E0C;
+  --bg-surface:   #111512;
+  --bg-elevated:  #181E19;
+  --bg-card:      #1E2620;
+  --bg-input:     #141A15;
+
+  /* Verde bosque — apagado, no neón */
+  --green:        #3D7A55;   /* verde principal, matizado */
+  --green-light:  #5A9E72;   /* hover, highlight */
+  --green-dark:   #234A34;   /* fondo de botones, profundidad */
+  --green-glow:   rgba(61, 122, 85, 0.14);
+  --green-border: rgba(61, 122, 85, 0.2);
+
+  /* Alias semánticos — usados en los componentes */
+  --zoro-green:        var(--green);
+  --zoro-green-dim:    var(--green-light);
+  --zoro-green-dark:   var(--green-dark);
+  --zoro-green-glow:   var(--green-glow);
+  --zoro-green-border: var(--green-border);
+
+  /* One Piece Gold */
+  --op-gold:      #C8960C;
+  --op-gold-dim:  #A67800;
+  --op-gold-glow: rgba(200, 150, 12, 0.14);
+
+  /* Textos — blanco como protagonista */
+  --text-primary:   #F8FAF8;          /* blanco hueso limpio */
+  --text-secondary: #9BADA0;          /* gris-verde suave */
+  --text-muted:     #55706A;          /* muy apagado */
+
+  /* Bordes — blanco semitransparente (no verde) */
+  --border-color:  rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+
+  /* Sombras */
+  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md:  0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-lg:  0 20px 48px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 24px rgba(61, 122, 85, 0.1);
+
+  /* Estados del tracker — más apagados, más sobrios */
+  --state-watching:   #4A9E6A;   /* verde bosque claro */
+  --state-completed:  #C8960C;   /* dorado */
+  --state-pending:    #5B8DD9;   /* azul acero */
+  --state-dropped:    #C0574A;   /* rojo ladrillo */
+  --state-paused:     #8B72C4;   /* violeta apagado */
+
+  /* Tipos de contenido — paleta refinada */
+  --type-anime:   #D97B5A;   /* terracota / coral apagado */
+  --type-manga:   #C89240;   /* ámbar / dorado oscuro */
+  --type-series:  #5B8DD9;   /* azul acero */
+  --type-movie:   #8B72C4;   /* violeta apagado */
+
+  /* Tipografía */
+  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0.1px;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Reset base ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* ===== Tipografía ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.5px; }
+h2 { font-size: 1.5rem;  font-weight: 600; }
+h3 { font-size: 1.125rem; font-weight: 600; }
+
+p { margin: 0; }
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
+
+/* ===== Inputs y Forms ===== */
+input, textarea, select {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+/* ===== Selección de texto ===== */
+::selection {
+  background-color: var(--green-dark);
+  color: var(--text-primary);
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  padding: 2px 6px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  color: var(--green-light);
+}
+
