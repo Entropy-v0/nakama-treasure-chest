@@ -395,7 +395,7 @@ const handleSubmit = async () => {
         </div>
 
         <!-- ── Columna derecha ── -->
-        <div class="flex flex-col gap-[22px] max-md:-order-1">
+        <div class="flex flex-col gap-[22px]">
 
           <!-- URL de portada -->
           <div class="flex flex-col gap-2">

@@ -8,12 +8,11 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import katanaLogo from '../assets/katana_logo.png'
-import { Heart, LogOut, Pencil, Ship, Calendar as CalendarIcon, User, X } from '@lucide/vue'
+import { Heart, LogOut, Pencil, Ship, Calendar as CalendarIcon } from '@lucide/vue'
 import EditProfileModal from './auth/EditProfileModal.vue'
 import { useCrew } from '../composables/useCrew'
 
 const isEditProfileOpen = ref(false)
-const isMobileProfileSheetOpen = ref(false)
 const { hasPendingInvites } = useCrew()
 
 interface Props {
@@ -45,13 +44,7 @@ const navigateTo = (path: string, viewName?: string) => {
   router.push(path)
 }
 
-const openEditProfile = () => {
-  isMobileProfileSheetOpen.value = false
-  isEditProfileOpen.value = true
-}
-
 const handleLogout = async () => {
-  isMobileProfileSheetOpen.value = false
   try {
     await authStore.signOut()
     router.push('/login')
@@ -213,33 +206,6 @@ const handleLogout = async () => {
         </button>
       </div>
 
-      <!-- Perfil (Móvil) -->
-      <div class="mb-2 max-md:m-0 max-md:order-6">
-        <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
-          <li
-            class="hidden cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex max-md:flex-col max-md:gap-1 max-md:p-1.5 max-md:text-[10px]"
-            :class="{
-              'font-semibold text-green': isMobileProfileSheetOpen || isEditProfileOpen
-            }"
-            title="Mi perfil"
-            @click="isMobileProfileSheetOpen = true"
-          >
-            <div
-              class="relative flex size-[18px] shrink-0 items-center justify-center overflow-hidden rounded-full border bg-bg-elevated transition-colors"
-              :class="isMobileProfileSheetOpen || isEditProfileOpen ? 'border-green shadow-[0_0_8px_var(--zoro-green-glow)]' : 'border-[var(--zoro-green-border)]'"
-            >
-              <img
-                v-if="authStore.avatarUrl"
-                :src="authStore.avatarUrl"
-                :alt="authStore.userName"
-                class="h-full w-full object-cover"
-              />
-              <User v-else :size="12" class="text-green" />
-            </div>
-            <span>Perfil</span>
-          </li>
-        </ul>
-      </div>
     </nav>
 
     <!-- Footer (oculto en móvil) -->
@@ -252,73 +218,6 @@ const handleLogout = async () => {
       </div>
     </div>
   </aside>
-
-  <!-- Sheet / Modal de Perfil en Móvil -->
-  <div
-    v-if="isMobileProfileSheetOpen"
-    class="fixed inset-0 z-50 flex items-end justify-center bg-black/75 p-0 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
-    @click.self="isMobileProfileSheetOpen = false"
-  >
-    <div class="relative w-full rounded-t-[24px] border-t border-x border-[var(--border-color)] bg-bg-surface p-6 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom duration-200">
-      <!-- Top accent line -->
-      <div class="absolute top-0 right-0 left-0 h-[3px] rounded-t-[24px] bg-green" />
-
-      <!-- Drag handle -->
-      <div class="mx-auto -mt-2 mb-4 h-1 w-10 rounded-full bg-white/20" />
-
-      <!-- Botón de Cerrar -->
-      <button
-        type="button"
-        class="absolute top-4 right-4 flex size-[32px] cursor-pointer items-center justify-center rounded-lg border border-[var(--border-color)] bg-bg-elevated text-text-secondary transition-colors duration-200 hover:border-state-dropped hover:text-state-dropped"
-        title="Cerrar"
-        @click="isMobileProfileSheetOpen = false"
-      >
-        <X :size="16" stroke-width="2.5" />
-      </button>
-
-      <!-- Encabezado de Usuario -->
-      <div class="mb-5 flex items-center gap-4 border-b border-white/5 pb-5">
-        <div class="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[var(--zoro-green-border)] bg-bg-elevated shadow-md">
-          <img
-            v-if="authStore.avatarUrl"
-            :src="authStore.avatarUrl"
-            :alt="authStore.userName"
-            class="h-full w-full object-cover"
-          />
-          <User v-else :size="26" class="text-green" />
-        </div>
-        <div class="flex min-w-0 flex-1 flex-col">
-          <span class="truncate font-heading text-lg font-bold text-text-primary">
-            {{ authStore.userTitle }} {{ authStore.userName }}
-          </span>
-          <span class="truncate text-xs text-text-muted mt-0.5">
-            {{ authStore.user?.email || 'Tripulante de Nakama' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Acciones de Perfil -->
-      <div class="flex flex-col gap-3">
-        <button
-          type="button"
-          class="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-[var(--zoro-green-border)] bg-[var(--zoro-green-glow)] py-3 text-sm font-semibold text-text-primary transition-all duration-200 hover:border-green-light hover:bg-green-dark"
-          @click="openEditProfile"
-        >
-          <Pencil :size="16" />
-          <span>Editar información del perfil</span>
-        </button>
-
-        <button
-          type="button"
-          class="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-bg-elevated py-3 text-sm font-semibold text-state-dropped transition-colors duration-200 hover:bg-state-dropped/10"
-          @click="handleLogout"
-        >
-          <LogOut :size="16" />
-          <span>Cerrar sesión</span>
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- Modal de Edición de Perfil -->
   <EditProfileModal
