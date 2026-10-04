@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * ItemList.vue — Smart Component (refactorizado)
  * Orquesta filtros, búsqueda, grid y paginación de la colección.
@@ -7,19 +7,19 @@
  * Datos: siguen siendo Mocks via useItems (Fase 1: NO conectar Supabase).
  */
 import { ref, computed, onMounted } from 'vue'
-import { useItems } from '../composables/useItems.js'
+import { useItems } from '../composables/useItems'
 import {
   TYPE_META,
   TYPE_TABS_META,
   STATUS_COLORS,
   TIPOS_FILTER,
   ESTADOS_FILTER,
-} from '../composables/useTypeMeta.js'
+} from '../composables/useTypeMeta'
 import PageContainer from '../components/layout/PageContainer.vue'
 import ItemDetailsModal from '../components/ItemDetailsModal.vue'
 
 import SearchBar from '../components/collection/SearchBar.vue'
-import FilterTabs from '../components/collection/FilterTabs.vue'
+import FilterTabs, { type FilterTabItem } from '../components/collection/FilterTabs.vue'
 import StatusFilter from '../components/collection/StatusFilter.vue'
 import ItemCard from '../components/collection/ItemCard.vue'
 import { useCrew } from '../composables/useCrew'
@@ -27,7 +27,7 @@ import { Layers, Users, User, Ship } from '@lucide/vue'
 
 const { items, isLoading, isLoaded, loadItems } = useItems()
 const { crew, hasCrew, loadCrewData } = useCrew()
-const selectedItemId = ref(null)
+const selectedItemId = ref<number | null>(null)
 const selectedItem = computed(() => {
   if (selectedItemId.value === null) return null
   return items.value.find(i => i.id === selectedItemId.value) || null
@@ -45,11 +45,14 @@ onMounted(async () => {
 })
 
 /* ── Tab data para FilterTabs ── */
-const typeTabs = TIPOS_FILTER.map(key => ({
-  key,
-  icon: TYPE_TABS_META[key]?.icon || null,
-  color: TYPE_TABS_META[key]?.color || 'var(--zoro-green)',
-}))
+const typeTabs: FilterTabItem[] = TIPOS_FILTER.map(key => {
+  const meta = TYPE_TABS_META[key as keyof typeof TYPE_TABS_META]
+  return {
+    key,
+    icon: meta?.icon || null,
+    color: meta?.color || 'var(--zoro-green)',
+  }
+})
 
 /* ── Estado de filtros ── */
 const activeTipo   = ref('Todos')
@@ -82,8 +85,8 @@ const paginated    = computed(() => {
   return filteredItems.value.slice(start, start + itemsPerPage)
 })
 
-const setTipo   = (t) => { activeTipo.value = t;   currentPage.value = 1 }
-const setEstado = (e) => { activeEstado.value = e; currentPage.value = 1 }
+const setTipo   = (t: string) => { activeTipo.value = t;   currentPage.value = 1 }
+const setEstado = (e: string) => { activeEstado.value = e; currentPage.value = 1 }
 
 const clearFilters = () => {
   activeTipo.value = 'Todos'
@@ -93,7 +96,8 @@ const clearFilters = () => {
 </script>
 
 <template>
-  <PageContainer title="Colección">
+  <PageContainer title="Colección"
+  subtitle="Explora y gestiona tu contenido" :loading="isLoading">
     <template #title-suffix>
       <!-- Selector de Ámbito (Personal vs Tripulación Compartida) -->
       <div v-if="hasCrew" class="flex items-center gap-1 bg-bg-surface border border-white/5 p-1 rounded-xl">

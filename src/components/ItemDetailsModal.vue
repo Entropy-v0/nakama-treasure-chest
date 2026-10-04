@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * ItemDetailsModal.vue — Refactorizado con Modo Edición y Progreso
  * Permite visualizar y editar la información de la tarjeta (estado, puntuación, progreso/capítulo, nota, link, etc.),
@@ -18,6 +18,8 @@ import {
 } from '@lucide/vue'
 import { useItems } from '../composables/useItems'
 import { useAlert } from '../composables/useAlert'
+import { useClipboard } from '../composables/useClipboard'
+import type { Item, ItemEstado } from '../types/items'
 import {
   TYPE_META,
   STATUS_META,
@@ -27,30 +29,35 @@ import {
 import StatusSelector from './items/StatusSelector.vue'
 import ScoreSelector from './items/ScoreSelector.vue'
 
-const props = defineProps({
-  item: { type: Object, required: true },
-})
+interface Props {
+  item: Item
+}
 
-const emit = defineEmits(['close'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
 const { updateItem, deleteItem } = useItems()
 const { showAlert, showConfirm } = useAlert()
+const { copied, copy } = useClipboard()
 
-const copied = ref(false)
-const copyLink = async (url) => {
-  if (!url) return
-  try {
-    await navigator.clipboard.writeText(url)
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 1800)
-  } catch (err) {
-    console.error('Error al copiar:', err)
-  }
+interface EditFormState {
+  titulo: string
+  estado: ItemEstado
+  puntuacion: number | null
+  progreso: number | string | null
+  link: string
+  nota: string
+  anio: number | string
+  autor: string
+  estudio: string
+  portada: string
 }
 
 const isEditing = ref(false)
-const editForm = ref({
+const editForm = ref<EditFormState>({
   titulo: '',
   estado: 'Pendiente',
   puntuacion: null,
@@ -123,11 +130,17 @@ const handleSave = async () => {
     return
   }
 
-  const updates = {
-    ...editForm.value,
+  const updates: Partial<Item> = {
+    titulo: editForm.value.titulo.trim(),
+    estado: editForm.value.estado,
+    puntuacion: editForm.value.puntuacion,
+    progreso: editForm.value.progreso !== null && editForm.value.progreso !== '' ? parseInt(String(editForm.value.progreso), 10) : null,
     link: editForm.value.link?.trim() || null,
-    progreso: editForm.value.progreso !== null && editForm.value.progreso !== '' ? parseInt(editForm.value.progreso) : null,
-    anio: editForm.value.anio ? parseInt(editForm.value.anio) : null,
+    nota: editForm.value.nota || null,
+    anio: editForm.value.anio ? parseInt(String(editForm.value.anio), 10) : null,
+    autor: editForm.value.autor || null,
+    estudio: editForm.value.estudio || null,
+    portada: editForm.value.portada || null,
   }
 
   try {
@@ -292,7 +305,7 @@ const handleDelete = async () => {
                   type="button"
                   class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-bg-elevated px-2.5 py-1 text-xs font-semibold text-text-secondary transition-all hover:border-green-light hover:text-green"
                   :title="copied ? '¡Copiado!' : 'Copiar enlace'"
-                  @click="copyLink(item.link)"
+                  @click="copy(item.link)"
                 >
                   <Check v-if="copied" :size="13" class="text-green" stroke-width="2.5" />
                   <Copy v-else :size="13" stroke-width="2" />
@@ -327,7 +340,7 @@ const handleDelete = async () => {
                 <div class="flex flex-col leading-tight">
                   <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">{{ progresoLabel }} actual</span>
                   <span class="font-heading text-lg font-bold text-text-primary">
-                    <template v-if="item.progreso !== null && item.progreso !== undefined && item.progreso !== ''">
+                    <template v-if="item.progreso !== null && item.progreso !== undefined">
                       {{ progresoLabel }} {{ item.progreso }}
                     </template>
                     <template v-else>

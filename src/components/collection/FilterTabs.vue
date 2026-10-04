@@ -1,19 +1,27 @@
-<script setup>
+<script setup lang="ts">
 /**
  * FilterTabs — Dumb Component
  * Tabs de filtro genéricos. Cada tab tiene un ícono opcional y un label.
  * Emite la selección, no maneja estado interno.
  */
-defineProps({
-  tabs: {
-    type: Array,
-    required: true,
-    // [{ key: 'Anime', icon: Component, color: '#FFF' }, ...]
-  },
-  active: { type: String, required: true },
-})
+import type { Component } from 'vue'
 
-defineEmits(['select'])
+export interface FilterTabItem {
+  key: string
+  icon?: Component | any
+  color?: string
+}
+
+interface Props {
+  tabs: FilterTabItem[]
+  active: string
+}
+
+defineProps<Props>()
+
+defineEmits<{
+  select: [key: string]
+}>()
 </script>
 
 <template>

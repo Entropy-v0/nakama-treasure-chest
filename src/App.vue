@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * App.vue — Refactorizado (Fase 3 & 4: Pinia + Vue Router + Supabase Auth)
  * Layout raíz reactivo al estado de autenticación y rutas activas.

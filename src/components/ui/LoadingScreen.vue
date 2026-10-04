@@ -1,15 +1,16 @@
-<script setup>
+<script setup lang="ts">
 /**
  * LoadingScreen.vue — Dumb Component
  * Spinner / Loader de inicio con branding Nakama y animación suave.
  */
 import katanaLogo from '../../assets/katana_logo.png'
 
-defineProps({
-  message: {
-    type: String,
-    default: 'Cargando tu bitácora...',
-  },
+interface Props {
+  message?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  message: 'Cargando tu bitácora...',
 })
 </script>
 

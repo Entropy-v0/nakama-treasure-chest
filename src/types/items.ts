@@ -30,6 +30,8 @@ export type Item = {
   estudio?: string | null;
   link?: string | null;
   progreso?: number | null;
+  categoria?: string | null;
+  etiquetas?: string[] | null;
   created_at?: string;
   updated_at?: string;
   creator_profile?: ProfileSummary | null;

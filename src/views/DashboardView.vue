@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Dashboard.vue — Smart Component (refactorizado)
  * Orquesta los sub-componentes del dashboard.
@@ -11,8 +11,9 @@ import { useRouter } from 'vue-router'
 import { Anchor, Users, User, Layers, Dices, Ship, Check, Play, ExternalLink, X, Sparkles } from '@lucide/vue'
 import { useAuthStore } from '../stores/auth'
 import { useCrew } from '../composables/useCrew'
-import { useItems } from '../composables/useItems.js'
-import { TYPE_META, STATUS_META } from '../composables/useTypeMeta.js'
+import { useItems } from '../composables/useItems'
+import { TYPE_META, STATUS_META } from '../composables/useTypeMeta'
+import type { Item } from '../types/items'
 
 import PageContainer from '../components/layout/PageContainer.vue'
 import StatCard from '../components/dashboard/StatCard.vue'
@@ -20,15 +21,17 @@ import StatusPillBar from '../components/dashboard/StatusPillBar.vue'
 import RecentItemCard from '../components/dashboard/RecentItemCard.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
 
-const emit = defineEmits(['change-view'])
+const emit = defineEmits<{
+  'change-view': [viewName?: string]
+}>()
 const router = useRouter()
 const authStore = useAuthStore()
 const { crew, hasCrew, loadCrewData } = useCrew()
 const { items, isLoaded, loadItems } = useItems()
 
-const currentScope = ref('todos') // 'todos' | 'compartido' | 'personal'
+const currentScope = ref<'todos' | 'compartido' | 'personal'>('todos')
 const isRandomPickerOpen = ref(false)
-const selectedRandomItem = ref(null)
+const selectedRandomItem = ref<Item | null>(null)
 const isSpinning = ref(false)
 
 onMounted(async () => {
@@ -42,8 +45,8 @@ onMounted(async () => {
   }
 })
 
-const goToView = (path, viewName) => {
-  emit('change-view', viewName)
+const goToView = (path: string, viewName?: string) => {
+  if (viewName) emit('change-view', viewName)
   router.push(path)
 }
 
@@ -160,7 +163,7 @@ const pickRandomItem = () => {
       <div class="flex items-center gap-2.5 px-3 text-xs text-text-muted">
         <Ship :size="17" class="text-white shrink-0" />
         <span>
-          Tripulación activa: <strong class="text-text-primary">{{ crew.name }}</strong>
+          Tripulación activa: <strong class="text-text-primary">{{ crew?.name }}</strong>
         </span>
       </div>
 

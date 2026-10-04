@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Sidebar.vue — Refactorizado (Fase 3: Pinia + Vue Router)
  * Barra de navegación lateral de escritorio y barra inferior en móvil.
@@ -15,20 +15,23 @@ import { useCrew } from '../composables/useCrew'
 const isEditProfileOpen = ref(false)
 const { hasPendingInvites } = useCrew()
 
-const props = defineProps({
-  currentView: {
-    type: String,
-    default: 'dashboard',
-  },
+interface Props {
+  currentView?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  currentView: 'dashboard',
 })
 
-const emit = defineEmits(['change-view'])
+const emit = defineEmits<{
+  'change-view': [viewName: string]
+}>()
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const isViewActive = (path, viewName) => {
+const isViewActive = (path: string, viewName?: string) => {
   if (route?.path) {
     if (path === '/dashboard') return route.path === '/dashboard' || route.path === '/'
     return route.path === path
@@ -36,8 +39,8 @@ const isViewActive = (path, viewName) => {
   return props.currentView === viewName
 }
 
-const navigateTo = (path, viewName) => {
-  emit('change-view', viewName)
+const navigateTo = (path: string, viewName?: string) => {
+  if (viewName) emit('change-view', viewName)
   router.push(path)
 }
 
@@ -162,6 +165,7 @@ const handleLogout = async () => {
         </ul>
       </div>
 
+      <!-- Crew -->
       <div class="mb-2 max-md:m-0">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
@@ -172,7 +176,7 @@ const handleLogout = async () => {
             @click="navigateTo('/crew', 'crew')"
           >
             <div class="flex items-center gap-2.5 max-md:flex-col max-md:gap-1">
-              <Ship :size="17" class="shrink-0 text-white" />
+              <Ship :size="17" class="shrink-0" />
               <span>Tripulación</span>
             </div>
             <span

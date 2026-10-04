@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * AddItem.vue — Smart Component (refactorizado)
  * Orquesta la creación de un nuevo elemento en la colección.
@@ -10,6 +10,9 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItems } from '../composables/useItems.js'
 import { useAlert } from '../composables/useAlert.js'
+import { useMediaSearch } from '../composables/useMediaSearch'
+import type { MediaSearchResult } from '../services/api/mediaSearch.service'
+import type { ItemTipo, ItemEstado } from '../types/items'
 import {
   TIPOS,
   ESTADOS,
@@ -22,23 +25,38 @@ import TypeSelector from '../components/items/TypeSelector.vue'
 import StatusSelector from '../components/items/StatusSelector.vue'
 import ScoreSelector from '../components/items/ScoreSelector.vue'
 import CoverPreview from '../components/items/CoverPreview.vue'
-import { mediaSearchService } from '../services/api/mediaSearch.service'
 import { useCrew } from '../composables/useCrew'
 import { Sparkles, Users, User, Loader2 } from '@lucide/vue'
 
-const emit = defineEmits(['item-added'])
+const emit = defineEmits<{
+  'item-added': []
+}>()
 const router = useRouter()
 const { addItem } = useItems()
 const { showAlert } = useAlert()
 const { crew, hasCrew } = useCrew()
+const { results: searchResults, isSearching, showSuggestions, search: triggerMediaSearch } = useMediaSearch(450)
 
-const shareScope = ref(hasCrew.value ? 'tripulacion' : 'personal')
-const searchResults = ref([])
-const isSearching = ref(false)
-const showSuggestions = ref(false)
-let searchTimeout = null
+const shareScope = ref<'tripulacion' | 'personal'>(hasCrew.value ? 'tripulacion' : 'personal')
 
-const form = ref({
+interface FormState {
+  titulo: string
+  tipo: ItemTipo
+  portada: string
+  link: string
+  progreso: number | string | null
+  estado: ItemEstado
+  puntuacion: number | null
+  generos: string
+  nota: string
+  anio: number | string
+  autor: string
+  estudio: string
+  categoria: string | null
+  etiquetas: string[]
+}
+
+const form = ref<FormState>({
   titulo:     '',
   tipo:       'Anime',
   portada:    '',
@@ -71,27 +89,10 @@ const progresoPlaceholder = computed(() => {
 })
 
 const handleTitleInput = () => {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  if (!form.value.titulo || form.value.titulo.trim().length < 2) {
-    searchResults.value = []
-    showSuggestions.value = false
-    return
-  }
-
-  searchTimeout = setTimeout(async () => {
-    isSearching.value = true
-    try {
-      searchResults.value = await mediaSearchService.search(form.value.titulo, form.value.tipo)
-      showSuggestions.value = searchResults.value.length > 0
-    } catch (e) {
-      console.warn('Error en búsqueda de autocompletado:', e)
-    } finally {
-      isSearching.value = false
-    }
-  }, 450)
+  triggerMediaSearch(form.value.titulo, form.value.tipo)
 }
 
-const selectSuggestion = (result) => {
+const selectSuggestion = (result: MediaSearchResult) => {
   form.value.titulo = result.titulo
   if (result.portada) form.value.portada = result.portada
   if (result.anio) form.value.anio = result.anio
@@ -120,7 +121,7 @@ const handleSubmit = async () => {
 
   const isShared = hasCrew.value && shareScope.value === 'tripulacion' && Boolean(crew.value?.id)
   const crewPayload = isShared
-    ? { crew_id: crew.value.id }
+    ? { crew_id: crew.value?.id || null }
     : { crew_id: null }
 
   try {
@@ -128,9 +129,9 @@ const handleSubmit = async () => {
       ...form.value,
       ...crewPayload,
       link: form.value.link?.trim() || null,
-      progreso: form.value.progreso !== null && form.value.progreso !== '' ? parseInt(form.value.progreso) : null,
+      progreso: form.value.progreso !== null && form.value.progreso !== '' ? parseInt(String(form.value.progreso), 10) : null,
       generos: generosList,
-      anio: form.value.anio ? parseInt(form.value.anio) : null,
+      anio: form.value.anio ? parseInt(String(form.value.anio), 10) : null,
     })
 
     await showAlert({ 
@@ -147,11 +148,11 @@ const handleSubmit = async () => {
 
     emit('item-added')
     router.push('/collection')
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error al agregar',
-      message: err.message || 'No se pudo guardar el elemento.',
+      message: err?.message || 'No se pudo guardar el elemento.',
     })
   }
 }

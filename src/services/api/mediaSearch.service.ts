@@ -20,20 +20,27 @@ export const mediaSearchService = {
   /**
    * Busca contenido según el tipo y término de búsqueda.
    */
-  async search(query: string, tipo: 'Anime' | 'Manga' | 'Serie' | 'Película'): Promise<MediaSearchResult[]> {
+  async search(
+    query: string,
+    tipo: 'Anime' | 'Manga' | 'Serie' | 'Película',
+    signal?: AbortSignal
+  ): Promise<MediaSearchResult[]> {
     const cleanQuery = query.trim();
     if (!cleanQuery || cleanQuery.length < 2) return [];
 
     try {
       if (tipo === 'Anime' || tipo === 'Manga') {
-        return await this.searchAniList(cleanQuery, tipo);
+        return await this.searchAniList(cleanQuery, tipo, signal);
       } else {
-        const westernResults = await this.searchTVMaze(cleanQuery, tipo);
+        const westernResults = await this.searchTVMaze(cleanQuery, tipo, signal);
         if (westernResults.length > 0) return westernResults;
         // Si no encuentra en TVMaze, probar en AniList por si es una película de anime
-        return await this.searchAniList(cleanQuery, tipo === 'Película' ? 'Anime' : 'Anime');
+        return await this.searchAniList(cleanQuery, tipo === 'Película' ? 'Anime' : 'Anime', signal);
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        throw err;
+      }
       console.warn('[mediaSearchService] Error buscando multimedia:', err);
       return [];
     }
@@ -42,7 +49,11 @@ export const mediaSearchService = {
   /**
    * Búsqueda en AniList GraphQL API (Anime / Manga).
    */
-  async searchAniList(query: string, tipo: 'Anime' | 'Manga'): Promise<MediaSearchResult[]> {
+  async searchAniList(
+    query: string,
+    tipo: 'Anime' | 'Manga',
+    signal?: AbortSignal
+  ): Promise<MediaSearchResult[]> {
     const anilistType = tipo === 'Manga' ? 'MANGA' : 'ANIME';
 
     const gqlQuery = `
@@ -89,6 +100,7 @@ export const mediaSearchService = {
           type: anilistType,
         },
       }),
+      signal,
     });
 
     if (!response.ok) return [];
@@ -120,8 +132,15 @@ export const mediaSearchService = {
   /**
    * Búsqueda en TVMaze API (Series y Películas para TV).
    */
-  async searchTVMaze(query: string, tipo: 'Serie' | 'Película'): Promise<MediaSearchResult[]> {
-    const response = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
+  async searchTVMaze(
+    query: string,
+    tipo: 'Serie' | 'Película',
+    signal?: AbortSignal
+  ): Promise<MediaSearchResult[]> {
+    const response = await fetch(
+      `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`,
+      { signal }
+    );
     if (!response.ok) return [];
 
     const results = await response.json();

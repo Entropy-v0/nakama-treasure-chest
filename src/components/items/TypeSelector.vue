@@ -1,14 +1,20 @@
-<script setup>
+<script setup lang="ts">
 /**
  * TypeSelector — Dumb Component
  * Selector en cuadrícula de tipos de contenido (Anime, Manga, etc.).
  */
-defineProps({
-  types: { type: Array, required: true },
-  typeMeta: { type: Object, default: () => ({}) },
+import type { ItemTipo } from '../../types/items'
+
+interface Props {
+  types: (ItemTipo | string)[]
+  typeMeta?: Record<string, any>
+}
+
+withDefaults(defineProps<Props>(), {
+  typeMeta: () => ({}),
 })
 
-const model = defineModel({ type: String, required: true })
+const model = defineModel<ItemTipo | string>({ required: true })
 </script>
 
 <template>

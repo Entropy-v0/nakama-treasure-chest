@@ -9,13 +9,8 @@ import { Calendar as CalendarIcon, Clock, Sparkles } from '@lucide/vue'
 <template>
   <PageContainer
     title="Calendario de Emisiones"
-    subtitle="Lanzamientos y capítulos de tu colección Nakama"
+    subtitle="Lanzamientos y capitulos semanales"
   >
-    <template #title-prefix>
-      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-green/10 text-green border border-green/20">
-        <CalendarIcon :size="22" />
-      </div>
-    </template>
 
     <template #header-actions>
       <div class="flex items-center gap-2 rounded-full border border-green/20 bg-green/5 px-3 py-1 text-xs text-green">
