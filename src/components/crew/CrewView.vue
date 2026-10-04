@@ -355,6 +355,14 @@ const formatDate = (isoString) => {
     <!-- ── CASO 1: NO TIENE TRIPULACIÓN ACTIVA ── -->
     <div v-if="!hasCrew" class="flex flex-col gap-10">
 
+      <!-- Aviso del correo del usuario para recibir invitaciones -->
+      <div class="flex items-center gap-3 rounded-[14px] border border-white/5 bg-bg-card p-4 max-w-xl text-xs text-text-muted">
+        <Mail :size="16" class="text-green shrink-0" />
+        <p>
+          Tu correo para recibir invitaciones es: <strong class="text-white">{{ authStore.userEmail || 'tu correo registrado' }}</strong>. El Capitán debe enviar la invitación a esta dirección exacta.
+        </p>
+      </div>
+
       <!-- Invitaciones Recibidas Pendientes -->
       <section v-if="pendingInvites.length > 0">
         <h2 class="mb-4 text-[13px] font-bold uppercase tracking-[2px] text-text-muted flex items-center gap-2">

@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './client'
 import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js'
 import type { UpdateProfileData } from '../../types/auth'
+import { MOCK_USER_ID, getMockUser } from '../../mocks/mockUser'
 
 export interface AuthCredentials {
   email: string
@@ -102,14 +103,13 @@ export const authService = {
   async signIn({ email, password }: AuthCredentials): Promise<{ user: User | null; session: Session | null }> {
     if (!isSupabaseConfigured) {
       // Autenticación mock para desarrollo
-      const mockUser: User = {
-        id: 'mock-user-nakama-1',
-        app_metadata: {},
-        user_metadata: { username: email.split('@')[0] || 'Capitana' },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
+      const mockUser = getMockUser({
         email,
-      } as User
+        user_metadata: {
+          username: email.split('@')[0] || 'Capitán Nakama',
+          genero: 'masculino',
+        },
+      })
       setStoredMockUser(mockUser)
       notifyMockListeners('SIGNED_IN', mockUser)
       return {
@@ -139,14 +139,11 @@ export const authService = {
   async signInWithOAuth(provider: 'discord' | 'google' = 'discord'): Promise<void> {
     if (!isSupabaseConfigured) {
       // Mock OAuth para desarrollo local sin Supabase
-      const mockUser: User = {
-        id: 'mock-user-discord-1',
+      const mockUser = getMockUser({
         app_metadata: { provider },
-        user_metadata: { username: 'NakamaDiscord', avatar_url: null },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
+        user_metadata: { username: 'Capitán Discord', avatar_url: null, genero: 'masculino' },
         email: 'nakama@discord.gg',
-      } as User
+      })
       setStoredMockUser(mockUser)
       notifyMockListeners('SIGNED_IN', mockUser)
       return
@@ -167,17 +164,13 @@ export const authService = {
    */
   async signUp({ email, password, username, genero = 'femenino' }: RegisterCredentials): Promise<{ user: User | null; session: Session | null }> {
     if (!isSupabaseConfigured) {
-      const mockUser: User = {
-        id: 'mock-user-nakama-' + Date.now(),
-        app_metadata: {},
+      const mockUser = getMockUser({
+        email,
         user_metadata: {
           username: username || email.split('@')[0] || (genero === 'masculino' ? 'Capitán' : 'Capitana'),
           genero,
         },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        email,
-      } as User
+      })
       setStoredMockUser(mockUser)
       notifyMockListeners('SIGNED_IN', mockUser)
       return {

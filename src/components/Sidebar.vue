@@ -8,7 +8,7 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import katanaLogo from '../assets/katana_logo.png'
-import { Heart, LogOut, Pencil, Ship } from '@lucide/vue'
+import { Heart, LogOut, Pencil, Ship, Calendar as CalendarIcon } from '@lucide/vue'
 import EditProfileModal from './auth/EditProfileModal.vue'
 import { useCrew } from '../composables/useCrew'
 
@@ -145,8 +145,23 @@ const handleLogout = async () => {
           </li>
         </ul>
       </div>
+      
+      <!-- Calendario -->
+      <div class="mb-2 max-md:m-0">
+        <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
+          <li
+            class="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
+            :class="{
+              'bg-[var(--zoro-green-glow)] font-semibold text-green shadow-[inset_2px_0_0_var(--green)] max-md:bg-transparent max-md:shadow-none': isViewActive('/calendar', 'calendar')
+            }"
+            @click="navigateTo('/calendar', 'calendar')"
+          >
+            <CalendarIcon :size="17" class="shrink-0" />
+            Calendario
+          </li>
+        </ul>
+      </div>
 
-      <!-- Tripulación (Menú Dedicado) -->
       <div class="mb-2 max-md:m-0">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li

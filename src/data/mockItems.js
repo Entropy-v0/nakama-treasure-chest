@@ -16,8 +16,6 @@ export const INITIAL_MOCK_ITEMS = [
     nota: 'El mejor anime de la historia.',
     anio: 1999,
     estudio: 'Toei Animation',
-    categoria: null,
-    etiquetas: [],
   },
   {
     id: 2,
@@ -30,8 +28,6 @@ export const INITIAL_MOCK_ITEMS = [
     nota: 'Un final épico.',
     anio: 2013,
     estudio: 'MAPPA',
-    categoria: null,
-    etiquetas: [],
   },
   {
     id: 3,
@@ -44,8 +40,6 @@ export const INITIAL_MOCK_ITEMS = [
     nota: 'Animación impresionante.',
     anio: 2019,
     estudio: 'ufotable',
-    categoria: null,
-    etiquetas: [],
   },
   {
     id: 4,
@@ -58,8 +52,6 @@ export const INITIAL_MOCK_ITEMS = [
     nota: 'Obra maestra absoluta.',
     anio: 2009,
     estudio: 'Bones',
-    categoria: null,
-    etiquetas: [],
   },
   {
     id: 5,
@@ -74,8 +66,6 @@ export const INITIAL_MOCK_ITEMS = [
     nota: 'Maestro Miura, descanse en paz.',
     anio: 1989,
     autor: 'Kentaro Miura',
-    categoria: null,
-    etiquetas: [],
   },
   {
     id: 6,
@@ -87,8 +77,6 @@ export const INITIAL_MOCK_ITEMS = [
     generos: ['Drama', 'Crimen', 'Thriller'],
     nota: 'La mejor serie de televisión.',
     anio: 2008,
-    categoria: null,
-    etiquetas: [],
   },
   {
     id: 7,
@@ -100,8 +88,6 @@ export const INITIAL_MOCK_ITEMS = [
     generos: ['Fantasía', 'Aventura', 'Studio Ghibli'],
     nota: 'Pura magia visual.',
     anio: 2001,
-    categoria: null,
-    etiquetas: [],
   },
   {
     id: 8,
@@ -114,7 +100,5 @@ export const INITIAL_MOCK_ITEMS = [
     nota: 'Fujimoto es un genio.',
     anio: 2018,
     autor: 'Tatsuki Fujimoto',
-    categoria: null,
-    etiquetas: [],
   },
 ];

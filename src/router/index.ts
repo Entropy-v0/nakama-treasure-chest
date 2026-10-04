@@ -31,6 +31,17 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, title: 'Nakama' },
   },
   {
+    path: '/calendar',
+    name: 'Calendar',
+    component: () => import('../components/Calendar.vue'),
+    meta: { requiresAuth: true, title: 'Nakama - Calendario' },
+  },
+  {
+    path: '/calender',
+    redirect: '/calendar',
+  },
+
+  {
     path: '/crew',
     name: 'Crew',
     component: () => import('../components/crew/CrewView.vue'),

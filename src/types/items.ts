@@ -28,8 +28,6 @@ export interface Item {
   anio?: number | null;
   autor?: string | null;
   estudio?: string | null;
-  categoria?: string | null;
-  etiquetas?: string[] | null;
   link?: string | null;
   progreso?: number | null;
   created_at?: string;

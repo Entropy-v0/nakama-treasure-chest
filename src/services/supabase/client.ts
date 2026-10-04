@@ -13,7 +13,10 @@ function isValidHttpUrl(string: string): boolean {
   }
 }
 
-export const isSupabaseConfigured: boolean = Boolean(
+// Soporte explícito para aislar desarrollo local con datos mock
+const forceMock = String(import.meta.env.VITE_USE_MOCK || '').toLowerCase() === 'true';
+
+export const isSupabaseConfigured: boolean = !forceMock && Boolean(
   rawUrl &&
   rawKey &&
   isValidHttpUrl(rawUrl) &&
@@ -23,6 +26,16 @@ export const isSupabaseConfigured: boolean = Boolean(
   rawKey !== 'your_supabase_anon_key' &&
   rawKey !== 'placeholder-key'
 );
+
+if (import.meta.env.DEV) {
+  if (forceMock) {
+    console.info('⚡ [Nakama] Modo Mock forzado activo (VITE_USE_MOCK=true). Usando datos locales sin Supabase.');
+  } else if (!isSupabaseConfigured) {
+    console.info('⚡ [Nakama] Supabase no configurado. Operando en modo Mock local con datos en memoria.');
+  } else {
+    console.info('⚡ [Nakama] Conectado a Supabase en la nube.');
+  }
+}
 
 // Fallback dummy seguro para instanciar el cliente sin arrojar error cuando no está configurado
 const fallbackUrl = 'https://placeholder.supabase.co';
