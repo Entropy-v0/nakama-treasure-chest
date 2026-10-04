@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * CrewView.vue — Gestión de Tripulación (Nakama Network / Modo Pareja)
  * Vista con el mismo diseño, estética y estructura visual que el Dashboard y la Colección:
@@ -95,7 +95,7 @@ const handleSaveCrewName = async () => {
       title: '¡Nombre actualizado!',
       message: `Tu tripulación ahora se llama "${crew.value?.name}".`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -125,7 +125,7 @@ const handleCreateCrew = async () => {
       title: '¡Tripulación fundada!',
       message: `¡Bienvenido a bordo de "${crew.value?.name}"! Ahora puedes invitar a tus nakamas.`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -165,7 +165,7 @@ const handleSendInvite = async () => {
       title: '¡Invitación enviada!',
       message: `Hemos enviado una invitación a ${email}. Cuando inicie sesión con ese correo, podrá unirse a la tripulación.`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error al invitar',
@@ -176,7 +176,7 @@ const handleSendInvite = async () => {
   }
 }
 
-const handleCancelInvite = async (inviteId) => {
+const handleCancelInvite = async (inviteId: string) => {
   const confirmed = await showConfirm({
     title: '¿Cancelar invitación?',
     message: 'Esta invitación quedará revocada y ya no podrá ser utilizada.',
@@ -191,7 +191,7 @@ const handleCancelInvite = async (inviteId) => {
       title: 'Invitación cancelada',
       message: 'La invitación fue retirada con éxito.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -202,7 +202,7 @@ const handleCancelInvite = async (inviteId) => {
   }
 }
 
-const handleAcceptInvite = async (invite) => {
+const handleAcceptInvite = async (invite: any) => {
   isActionLoading.value = true
   try {
     await acceptInvite(invite)
@@ -211,7 +211,7 @@ const handleAcceptInvite = async (invite) => {
       title: '¡Bienvenido a la tripulación!',
       message: `Te has unido exitosamente a "${invite.crew?.name || 'la tripulación'}".`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -222,7 +222,7 @@ const handleAcceptInvite = async (invite) => {
   }
 }
 
-const handleDeclineInvite = async (inviteId) => {
+const handleDeclineInvite = async (inviteId: string) => {
   isActionLoading.value = true
   try {
     await declineInvite(inviteId)
@@ -231,7 +231,7 @@ const handleDeclineInvite = async (inviteId) => {
       title: 'Invitación rechazada',
       message: 'Has declinado unirte a esta tripulación.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -257,7 +257,7 @@ const handleLeaveCrew = async () => {
       title: 'Has dejado la tripulación',
       message: 'Ahora navegas como lobo solitario.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -284,7 +284,7 @@ const handleDeleteCrew = async () => {
       title: 'Tripulación disuelta',
       message: 'La tripulación ha sido eliminada con éxito.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -295,16 +295,16 @@ const handleDeleteCrew = async () => {
   }
 }
 
-const getMemberInitial = (member) => {
-  const name = member.profile?.username || 'N'
+const getMemberInitial = (member: any) => {
+  const name = member?.profile?.username || 'N'
   return name.charAt(0).toUpperCase()
 }
 
-const getMemberDisplayName = (member) => {
-  return member.profile?.username || 'Nakama anónimo'
+const getMemberDisplayName = (member: any) => {
+  return member?.profile?.username || 'Nakama anónimo'
 }
 
-const formatDate = (isoString) => {
+const formatDate = (isoString?: string | null) => {
   if (!isoString) return ''
   try {
     const d = new Date(isoString)
@@ -476,8 +476,8 @@ const formatDate = (isoString) => {
             <div class="my-2">
               <!-- Vista normal de nombre -->
               <div v-if="!isEditingName" class="flex items-center justify-between gap-2">
-                <span class="text-xl font-bold text-white truncate" :title="crew.name">
-                  {{ crew.name }}
+                <span class="text-xl font-bold text-white truncate" :title="crew?.name">
+                  {{ crew?.name }}
                 </span>
                 <button
                   type="button"
@@ -516,7 +516,7 @@ const formatDate = (isoString) => {
               </form>
             </div>
 
-            <span class="text-[11px] text-text-muted">Creada el {{ formatDate(crew.created_at) }}</span>
+            <span class="text-[11px] text-text-muted">Creada el {{ formatDate(crew?.created_at) }}</span>
           </div>
 
           <!-- Card: Nakamas a Bordo -->
