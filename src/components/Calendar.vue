@@ -1,11 +1,8 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Calendar.vue — Vista de Calendario para seguimiento de emisiones y lanzamientos.
  */
-import { ref } from 'vue'
 import { Calendar as CalendarIcon, Clock, Sparkles } from '@lucide/vue'
-
-const currentDate = ref(new Date())
 </script>
 
 <template>

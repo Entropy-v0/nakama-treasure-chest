@@ -1,8 +1,10 @@
+import type { Item } from '../types/items';
+
 /**
  * Datos mock iniciales para la colección Nakama.
  * Utilizado como fallback mientras Supabase no esté conectado o en desarrollo offline.
  */
-export const INITIAL_MOCK_ITEMS = [
+export const INITIAL_MOCK_ITEMS: Item[] = [
   {
     id: 1,
     titulo: 'One Piece',

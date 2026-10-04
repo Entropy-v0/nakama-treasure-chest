@@ -14,7 +14,7 @@ export type ItemEstado =
 
 import type { ProfileSummary } from './crew';
 
-export interface Item {
+export type Item = {
   id: number;
   user_id?: string | null;
   crew_id?: string | null;
@@ -33,7 +33,7 @@ export interface Item {
   created_at?: string;
   updated_at?: string;
   creator_profile?: ProfileSummary | null;
-}
+};
 
 export type ItemInsert = Omit<Item, 'id' | 'created_at' | 'updated_at'> & {
   id?: number;

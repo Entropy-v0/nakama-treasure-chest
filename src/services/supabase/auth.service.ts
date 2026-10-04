@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './client'
 import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js'
 import type { UpdateProfileData } from '../../types/auth'
+import type { Database } from '../../types/database'
 import { MOCK_USER_ID, getMockUser } from '../../mocks/mockUser'
 
 export interface AuthCredentials {
@@ -226,7 +227,7 @@ export const authService = {
 
     // 2. Sincronizar en la tabla public.profiles
     if (data.user) {
-      const profileUpdates: Record<string, any> = {
+      const profileUpdates: Database['public']['Tables']['profiles']['Update'] = {
         updated_at: new Date().toISOString(),
       }
       if (updates.username !== undefined) profileUpdates.username = updates.username
