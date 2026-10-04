@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './client';
 import type { Crew, CrewMember, CrewInvite, ProfileSummary } from '../../types/crew';
+import { MOCK_USER_ID, MOCK_USER_EMAIL } from '../../mocks/mockUser';
 
 // Memoria local de respaldo para desarrollo offline
 let inMemoryCrew: Crew | null = null;
@@ -98,17 +99,17 @@ export const crewService = {
       const mockCrew: Crew = {
         id: 'mock-crew-1',
         name,
-        created_by: 'mock-user',
+        created_by: MOCK_USER_ID,
         created_at: new Date().toISOString(),
       };
       const mockMember: CrewMember = {
         id: 'mock-member-1',
         crew_id: mockCrew.id,
-        user_id: 'mock-user',
+        user_id: MOCK_USER_ID,
         role: 'capitan',
         joined_at: new Date().toISOString(),
         profile: {
-          id: 'mock-user',
+          id: MOCK_USER_ID,
           username: 'Capitán Nakama',
           avatar_url: null,
           genero: 'masculino',
@@ -166,10 +167,17 @@ export const crewService = {
       const mockInvite: CrewInvite = {
         id: 'mock-invite-' + Date.now(),
         crew_id: crewId,
-        inviter_id: 'mock-user',
+        inviter_id: MOCK_USER_ID,
         invitee_email: cleanEmail,
         status: 'pending',
         created_at: new Date().toISOString(),
+        crew: inMemoryCrew,
+        inviter_profile: {
+          id: MOCK_USER_ID,
+          username: 'Capitán Nakama',
+          avatar_url: null,
+          genero: 'masculino',
+        },
       };
       inMemoryInvites.push(mockInvite);
       return mockInvite;
@@ -202,51 +210,88 @@ export const crewService = {
    */
   async getPendingInvites(): Promise<CrewInvite[]> {
     if (!isSupabaseConfigured) {
-      return [...inMemoryInvites.filter(i => i.status === 'pending')];
+      let currentEmail = MOCK_USER_EMAIL;
+      let currentUserId = MOCK_USER_ID;
+      try {
+        const stored = localStorage.getItem('nakama_mock_session');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.email) currentEmail = parsed.email.toLowerCase();
+          if (parsed.id) currentUserId = parsed.id;
+        }
+      } catch {
+        // fallback
+      }
+
+      return inMemoryInvites.filter(
+        i => i.status === 'pending' &&
+        i.invitee_email.toLowerCase() === currentEmail &&
+        i.inviter_id !== currentUserId
+      );
     }
 
     const { data: authData } = await supabase.auth.getUser();
     const currentUser = authData?.user;
     if (!currentUser?.email) return [];
 
-    const { data, error } = await supabase
-      .from('crew_invites')
-      .select(`
-        id,
-        crew_id,
-        inviter_id,
-        invitee_email,
-        status,
-        created_at,
-        crews:crew_id (id, name, created_by, created_at)
-      `)
-      .eq('status', 'pending')
-      .ilike('invitee_email', currentUser.email);
+    const userEmail = currentUser.email.trim().toLowerCase();
 
-    if (error || !data) {
+    // 1. Obtener invitaciones donde invitee_email coincida con el correo del usuario
+    const { data: rawInvites, error: invitesError } = await supabase
+      .from('crew_invites')
+      .select('*')
+      .eq('status', 'pending')
+      .ilike('invitee_email', userEmail);
+
+    if (invitesError) {
+      console.error('Error al obtener invitaciones pendientes de crew_invites:', invitesError);
       return [];
     }
 
-    // Obtener perfiles de los invitadores
-    const inviterIds = data.map((d: any) => d.inviter_id);
-    const { data: profiles } = await supabase
+    if (!rawInvites || rawInvites.length === 0) {
+      return [];
+    }
+
+    // 2. Obtener datos de las tripulaciones vinculadas
+    const crewIds = [...new Set(rawInvites.map((i: any) => i.crew_id))];
+    const { data: crewsData, error: crewsError } = await supabase
+      .from('crews')
+      .select('id, name, created_by, created_at')
+      .in('id', crewIds);
+
+    if (crewsError) {
+      console.warn('Error al obtener detalles de las tripulaciones para las invitaciones:', crewsError);
+    }
+
+    const crewMap = new Map<string, any>();
+    if (crewsData) {
+      crewsData.forEach((c: any) => crewMap.set(c.id, c));
+    }
+
+    // 3. Obtener perfiles de los usuarios invitadores
+    const inviterIds = [...new Set(rawInvites.map((i: any) => i.inviter_id))];
+    const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, avatar_url, genero')
       .in('id', inviterIds);
+
+    if (profilesError) {
+      console.warn('Error al obtener perfiles de invitadores:', profilesError);
+    }
 
     const profileMap = new Map<string, ProfileSummary>();
     if (profiles) {
       profiles.forEach((p: any) => profileMap.set(p.id, p));
     }
 
-    return data.map((item: any) => ({
+    return rawInvites.map((item: any) => ({
       id: item.id,
       crew_id: item.crew_id,
       inviter_id: item.inviter_id,
       invitee_email: item.invitee_email,
       status: item.status,
       created_at: item.created_at,
-      crew: item.crews || null,
+      crew: crewMap.get(item.crew_id) || null,
       inviter_profile: profileMap.get(item.inviter_id) || null,
     }));
   },
@@ -257,7 +302,38 @@ export const crewService = {
   async acceptInvite(inviteId: string, crewId: string): Promise<void> {
     if (!isSupabaseConfigured) {
       const invite = inMemoryInvites.find(i => i.id === inviteId);
-      if (invite) invite.status = 'accepted';
+      if (invite) {
+        invite.status = 'accepted';
+        let currentUserId = MOCK_USER_ID;
+        let currentUsername = 'Capitán Nakama';
+        try {
+          const stored = localStorage.getItem('nakama_mock_session');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed.id) currentUserId = parsed.id;
+            if (parsed.user_metadata?.username) currentUsername = parsed.user_metadata.username;
+          }
+        } catch {
+          // fallback
+        }
+
+        const newMember: CrewMember = {
+          id: 'mock-member-' + Date.now(),
+          crew_id: crewId,
+          user_id: currentUserId,
+          role: 'nakama',
+          joined_at: new Date().toISOString(),
+          profile: {
+            id: currentUserId,
+            username: currentUsername,
+            avatar_url: null,
+            genero: 'masculino',
+          },
+        };
+        if (!inMemoryMembers.some(m => m.user_id === currentUserId)) {
+          inMemoryMembers.push(newMember);
+        }
+      }
       return;
     }
 

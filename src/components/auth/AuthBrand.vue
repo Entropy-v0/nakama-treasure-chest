@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * AuthBrand — Dumb Component
  * Logotipo y frase emblemática para las pantallas de autenticación.

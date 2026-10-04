@@ -1,15 +1,19 @@
-<script setup>
+<script setup lang="ts">
 /**
  * StatusFilter — Dumb Component
  * Filtro de estado con pills redondeadas y dots de color.
  */
-defineProps({
-  estados: { type: Array, required: true },
-  active: { type: String, required: true },
-  statusColors: { type: Object, required: true },
-})
+interface Props {
+  estados: string[]
+  active: string
+  statusColors: Record<string, string>
+}
 
-defineEmits(['select'])
+defineProps<Props>()
+
+defineEmits<{
+  select: [estado: string]
+}>()
 </script>
 
 <template>

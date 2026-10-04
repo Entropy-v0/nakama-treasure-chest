@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * ItemList.vue — Smart Component (refactorizado)
  * Orquesta filtros, búsqueda, grid y paginación de la colección.
@@ -7,26 +7,33 @@
  * Datos: siguen siendo Mocks via useItems (Fase 1: NO conectar Supabase).
  */
 import { ref, computed, onMounted } from 'vue'
-import { useItems } from '../composables/useItems.js'
+import { useItems } from '../composables/useItems'
 import {
   TYPE_META,
   TYPE_TABS_META,
   STATUS_COLORS,
   TIPOS_FILTER,
   ESTADOS_FILTER,
-} from '../composables/useTypeMeta.js'
-import ItemDetailsModal from './ItemDetailsModal.vue'
+} from '../composables/useTypeMeta'
+import PageContainer from '../components/layout/PageContainer.vue'
+import ItemDetailsModal from '../components/ItemDetailsModal.vue'
 
-import SearchBar from './collection/SearchBar.vue'
-import FilterTabs from './collection/FilterTabs.vue'
-import StatusFilter from './collection/StatusFilter.vue'
-import ItemCard from './collection/ItemCard.vue'
+import SearchBar from '../components/collection/SearchBar.vue'
+import FilterTabs, { type FilterTabItem } from '../components/collection/FilterTabs.vue'
+import StatusFilter from '../components/collection/StatusFilter.vue'
+import ItemCard from '../components/collection/ItemCard.vue'
+import ScopeFilter from '../components/ui/ScopeFilter.vue'
+import type { ItemScope } from '../types/items'
 import { useCrew } from '../composables/useCrew'
 import { Layers, Users, User, Ship } from '@lucide/vue'
 
 const { items, isLoading, isLoaded, loadItems } = useItems()
 const { crew, hasCrew, loadCrewData } = useCrew()
-const selectedItem = ref(null)
+const selectedItemId = ref<number | null>(null)
+const selectedItem = computed(() => {
+  if (selectedItemId.value === null) return null
+  return items.value.find(i => i.id === selectedItemId.value) || null
+})
 
 onMounted(async () => {
   loadCrewData()
@@ -40,16 +47,19 @@ onMounted(async () => {
 })
 
 /* ── Tab data para FilterTabs ── */
-const typeTabs = TIPOS_FILTER.map(key => ({
-  key,
-  icon: TYPE_TABS_META[key]?.icon || null,
-  color: TYPE_TABS_META[key]?.color || 'var(--zoro-green)',
-}))
+const typeTabs: FilterTabItem[] = TIPOS_FILTER.map(key => {
+  const meta = TYPE_TABS_META[key as keyof typeof TYPE_TABS_META]
+  return {
+    key,
+    icon: meta?.icon || null,
+    color: meta?.color || 'var(--zoro-green)',
+  }
+})
 
 /* ── Estado de filtros ── */
 const activeTipo   = ref('Todos')
 const activeEstado = ref('Todos')
-const activeScope  = ref('todos') // 'todos' | 'compartido' | 'personal'
+const activeScope  = ref<ItemScope>('todos')
 const searchQuery  = ref('')
 
 const filteredItems = computed(() => {
@@ -77,8 +87,8 @@ const paginated    = computed(() => {
   return filteredItems.value.slice(start, start + itemsPerPage)
 })
 
-const setTipo   = (t) => { activeTipo.value = t;   currentPage.value = 1 }
-const setEstado = (e) => { activeEstado.value = e; currentPage.value = 1 }
+const setTipo   = (t: string) => { activeTipo.value = t;   currentPage.value = 1 }
+const setEstado = (e: string) => { activeEstado.value = e; currentPage.value = 1 }
 
 const clearFilters = () => {
   activeTipo.value = 'Todos'
@@ -88,47 +98,15 @@ const clearFilters = () => {
 </script>
 
 <template>
-  <div class="box-border min-h-screen px-10 py-8 max-md:px-4 max-md:py-6">
+  <PageContainer title="Colección"
+  subtitle="Explora y gestiona tu contenido" :loading="isLoading">
+    <template #title-suffix>
+      <ScopeFilter v-if="hasCrew" v-model="activeScope" />
+    </template>
 
-    <!-- Header -->
-    <header class="mb-6 flex items-center justify-between border-b border-white/5 pb-5 max-md:flex-col max-md:items-start max-md:gap-4">
-      <div class="flex items-center gap-4 flex-wrap">
-        <h1 class="text-[2rem] font-bold text-white">Colección</h1>
-
-        <!-- Selector de Ámbito (Personal vs Tripulación Compartida) -->
-        <div v-if="hasCrew" class="flex items-center gap-1 bg-bg-surface border border-white/5 p-1 rounded-xl">
-          <button
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-            :class="activeScope === 'todos' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-            @click="activeScope = 'todos'"
-          >
-            <Layers :size="13" />
-            <span>Todos</span>
-          </button>
-          <button
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-            :class="activeScope === 'compartido' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-            @click="activeScope = 'compartido'"
-          >
-            <Users :size="13" />
-            <span>Compartidos</span>
-          </button>
-          <button
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-            :class="activeScope === 'personal' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-            @click="activeScope = 'personal'"
-          >
-            <User :size="13" />
-            <span>Solo mío</span>
-          </button>
-        </div>
-      </div>
-
+    <template #header-actions>
       <SearchBar v-model="searchQuery" />
-    </header>
+    </template>
 
     <!-- Tabs por tipo -->
     <div class="mb-3">
@@ -166,7 +144,7 @@ const clearFilters = () => {
         :item="item"
         :type-meta="TYPE_META[item.tipo] || {}"
         :status-color="STATUS_COLORS[item.estado] || 'var(--zoro-green)'"
-        @select="selectedItem = item"
+        @select="selectedItemId = item.id"
       />
     </div>
 
@@ -207,7 +185,7 @@ const clearFilters = () => {
     <ItemDetailsModal
       v-if="selectedItem"
       :item="selectedItem"
-      @close="selectedItem = null"
+      @close="selectedItemId = null"
     />
-  </div>
+  </PageContainer>
 </template>

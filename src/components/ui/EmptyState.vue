@@ -1,16 +1,23 @@
-<script setup>
+<script setup lang="ts">
 /**
  * EmptyState — Dumb Component (reutilizable en toda la app)
  * Muestra un estado vacío con ícono, mensaje y CTA opcional.
  */
 import { Anchor } from '@lucide/vue'
 
-defineProps({
-  message: { type: String, default: 'No hay contenido aún.' },
-  actionLabel: { type: String, default: null },
+interface Props {
+  message?: string
+  actionLabel?: string | null
+}
+
+withDefaults(defineProps<Props>(), {
+  message: 'No hay contenido aún.',
+  actionLabel: null,
 })
 
-defineEmits(['action'])
+defineEmits<{
+  action: []
+}>()
 </script>
 
 <template>

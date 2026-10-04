@@ -1,13 +1,15 @@
-<script setup>
+<script setup lang="ts">
 /**
  * AuthLayout — Dumb Component
  * Layout compartido de 2 columnas para vistas de autenticación (Login, Registro).
  */
 import { Anchor } from '@lucide/vue'
 
-defineProps({
-  bgImage: { type: String, required: true },
-})
+interface Props {
+  bgImage: string
+}
+
+defineProps<Props>()
 </script>
 
 <template>

@@ -1,14 +1,20 @@
-<script setup>
+<script setup lang="ts">
 /**
  * StatCard — Dumb Component
  * Tarjeta individual de estadística para el dashboard.
  * Recibe todos los datos vía props, no maneja estado.
  */
-defineProps({
-  icon: { type: [Object, Function], required: true },
-  count: { type: Number, required: true },
-  label: { type: String, required: true },
-  color: { type: String, default: 'var(--text-muted)' },
+import type { Component } from 'vue'
+
+interface Props {
+  icon: Component | any
+  count: number
+  label: string
+  color?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  color: 'var(--text-muted)',
 })
 </script>
 

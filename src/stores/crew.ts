@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { crewService } from '../services/supabase/crew.service';
 import type { Crew, CrewMember, CrewInvite } from '../types/crew';
 import { useAuthStore } from './auth';
@@ -10,9 +10,30 @@ export const useCrewStore = defineStore('crew', () => {
   const pendingInvites = ref<CrewInvite[]>([]);
   const sentInvites = ref<CrewInvite[]>([]);
   const isLoading = ref<boolean>(false);
+  const isLoaded = ref<boolean>(false);
   const error = ref<string | null>(null);
 
   const authStore = useAuthStore();
+
+  const reset = () => {
+    crew.value = null;
+    members.value = [];
+    pendingInvites.value = [];
+    sentInvites.value = [];
+    isLoading.value = false;
+    isLoaded.value = false;
+    error.value = null;
+  };
+
+  // Limpiar inmediatamente si el usuario cierra sesión o cambia de cuenta
+  watch(
+    () => authStore.user?.id,
+    (newId, oldId) => {
+      if (newId !== oldId) {
+        reset();
+      }
+    }
+  );
 
   const hasCrew = computed<boolean>(() => Boolean(crew.value));
   const memberCount = computed<number>(() => members.value.length);
@@ -30,14 +51,15 @@ export const useCrewStore = defineStore('crew', () => {
   const hasPendingInvites = computed<boolean>(() => pendingInvites.value.length > 0);
 
   /**
-   * Carga la tripulación del usuario y las posibles invitaciones que tenga pendientes.
+   * Carga la tripulación del usuario y las posibles invitaciones que tenga pendientes con soporte de caché.
    */
-  const loadCrewData = async () => {
+  const loadCrewData = async (force = false) => {
+    if (isLoaded.value && !force) {
+      return;
+    }
+
     if (!authStore.isAuthenticated) {
-      crew.value = null;
-      members.value = [];
-      pendingInvites.value = [];
-      sentInvites.value = [];
+      reset();
       return;
     }
 
@@ -63,6 +85,7 @@ export const useCrewStore = defineStore('crew', () => {
       }
 
       pendingInvites.value = invitesRes || [];
+      isLoaded.value = true;
     } catch (err: any) {
       error.value = err.message || 'Error al cargar datos de tripulación';
     } finally {
@@ -225,6 +248,7 @@ export const useCrewStore = defineStore('crew', () => {
     pendingInvites,
     sentInvites,
     isLoading,
+    isLoaded,
     error,
     hasCrew,
     memberCount,
@@ -240,5 +264,6 @@ export const useCrewStore = defineStore('crew', () => {
     declineInvite,
     leaveCrew,
     deleteCrew,
+    reset,
   };
 });

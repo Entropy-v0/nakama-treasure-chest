@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Dashboard.vue — Smart Component (refactorizado)
  * Orquesta los sub-componentes del dashboard.
@@ -11,23 +11,28 @@ import { useRouter } from 'vue-router'
 import { Anchor, Users, User, Layers, Dices, Ship, Check, Play, ExternalLink, X, Sparkles } from '@lucide/vue'
 import { useAuthStore } from '../stores/auth'
 import { useCrew } from '../composables/useCrew'
-import { useItems } from '../composables/useItems.js'
-import { TYPE_META, STATUS_META } from '../composables/useTypeMeta.js'
+import { useItems } from '../composables/useItems'
+import { TYPE_META, STATUS_META } from '../composables/useTypeMeta'
+import type { Item } from '../types/items'
 
-import StatCard from './dashboard/StatCard.vue'
-import StatusPillBar from './dashboard/StatusPillBar.vue'
-import RecentItemCard from './dashboard/RecentItemCard.vue'
-import EmptyState from './ui/EmptyState.vue'
+import PageContainer from '../components/layout/PageContainer.vue'
+import StatCard from '../components/dashboard/StatCard.vue'
+import StatusPillBar from '../components/dashboard/StatusPillBar.vue'
+import RecentItemCard from '../components/dashboard/RecentItemCard.vue'
+import EmptyState from '../components/ui/EmptyState.vue'
+import ScopeFilter from '../components/ui/ScopeFilter.vue'
 
-const emit = defineEmits(['change-view'])
+const emit = defineEmits<{
+  'change-view': [viewName?: string]
+}>()
 const router = useRouter()
 const authStore = useAuthStore()
 const { crew, hasCrew, loadCrewData } = useCrew()
 const { items, isLoaded, loadItems } = useItems()
 
-const currentScope = ref('todos') // 'todos' | 'compartido' | 'personal'
+const currentScope = ref<'todos' | 'compartido' | 'personal'>('todos')
 const isRandomPickerOpen = ref(false)
-const selectedRandomItem = ref(null)
+const selectedRandomItem = ref<Item | null>(null)
 const isSpinning = ref(false)
 
 onMounted(async () => {
@@ -41,8 +46,8 @@ onMounted(async () => {
   }
 })
 
-const goToView = (path, viewName) => {
-  emit('change-view', viewName)
+const goToView = (path: string, viewName?: string) => {
+  if (viewName) emit('change-view', viewName)
   router.push(path)
 }
 
@@ -109,10 +114,9 @@ const pickRandomItem = () => {
 </script>
 
 <template>
-  <div class="box-border min-h-screen max-w-[1100px] px-10 py-8 max-md:px-4 max-md:py-6">
-
+  <PageContainer max-width="max-w-[1100px]">
     <!-- ── Welcome Header ── -->
-    <header class="mb-8 flex items-start justify-between border-b border-white/5 pb-6 max-md:flex-col max-md:items-stretch max-md:gap-4">
+    <template #header>
       <div>
         <h1 class="mb-1.5 flex items-center gap-2.5 text-[2rem] font-bold text-white max-md:text-2xl">
           {{ authStore.welcomeGreeting }}
@@ -150,7 +154,7 @@ const pickRandomItem = () => {
           Agregar contenido
         </button>
       </div>
-    </header>
+    </template>
 
     <!-- ── Selector de Ámbito de Tripulación (Modo Pareja) ── -->
     <div
@@ -160,39 +164,11 @@ const pickRandomItem = () => {
       <div class="flex items-center gap-2.5 px-3 text-xs text-text-muted">
         <Ship :size="17" class="text-white shrink-0" />
         <span>
-          Tripulación activa: <strong class="text-text-primary">{{ crew.name }}</strong>
+          Tripulación activa: <strong class="text-text-primary">{{ crew?.name }}</strong>
         </span>
       </div>
 
-      <div class="flex items-center gap-1 bg-bg-elevated p-1 rounded-lg">
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-          :class="currentScope === 'todos' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="currentScope = 'todos'"
-        >
-          <Layers :size="13" />
-          <span>Todos</span>
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-          :class="currentScope === 'compartido' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="currentScope = 'compartido'"
-        >
-          <Users :size="13" />
-          <span>Compartidos</span>
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-          :class="currentScope === 'personal' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="currentScope = 'personal'"
-        >
-          <User :size="13" />
-          <span>Solo mío</span>
-        </button>
-      </div>
+      <ScopeFilter v-model="currentScope" />
     </div>
 
     <!-- ── Stats: tipos ── -->
@@ -344,5 +320,5 @@ const pickRandomItem = () => {
         </div>
       </div>
     </div>
-  </div>
+  </PageContainer>
 </template>

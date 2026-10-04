@@ -1,18 +1,19 @@
-<script setup>
+<script setup lang="ts">
 /**
  * ScoreSelector — Dumb Component
  * Botones numéricos del 1 al 10 para calificar contenido (permite deseleccionar).
  */
-defineProps({
-  options: {
-    type: Array,
-    default: () => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  },
+interface Props {
+  options?: number[]
+}
+
+withDefaults(defineProps<Props>(), {
+  options: () => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 })
 
-const model = defineModel({ type: [Number, null], default: null })
+const model = defineModel<number | null>({ default: null })
 
-const toggleScore = (n) => {
+const toggleScore = (n: number) => {
   model.value = model.value === n ? null : n
 }
 </script>

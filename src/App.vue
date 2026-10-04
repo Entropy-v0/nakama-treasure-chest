@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * App.vue — Refactorizado (Fase 3 & 4: Pinia + Vue Router + Supabase Auth)
  * Layout raíz reactivo al estado de autenticación y rutas activas.
@@ -8,6 +8,7 @@ import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import Sidebar from './components/Sidebar.vue'
+import MobileHeader from './components/layout/MobileHeader.vue'
 import LoadingScreen from './components/ui/LoadingScreen.vue'
 import AlertModal from './components/AlertModal.vue'
 
@@ -28,12 +29,17 @@ onMounted(async () => {
   <!-- Layout protegido: Solo accesible cuando la sesión está verificada y no es ruta guest -->
   <div
     v-else-if="authStore.isAuthenticated && !route.meta.guestOnly"
-    class="flex h-screen w-screen overflow-hidden bg-bg-base max-md:flex-col-reverse"
+    class="flex h-screen w-screen flex-col overflow-hidden bg-bg-base"
   >
-    <Sidebar />
-    <main class="flex-1 overflow-y-auto bg-bg-base">
-      <RouterView />
-    </main>
+    <!-- Cabecera superior móvil (marca y perfil) -->
+    <MobileHeader />
+
+    <div class="flex flex-1 overflow-hidden max-md:flex-col-reverse">
+      <Sidebar />
+      <main class="flex-1 overflow-y-auto bg-bg-base">
+        <RouterView />
+      </main>
+    </div>
   </div>
 
   <!-- Vistas públicas de autenticación (Login / Register) -->

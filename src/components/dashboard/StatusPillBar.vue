@@ -1,13 +1,15 @@
-<script setup>
+<script setup lang="ts">
 /**
  * StatusPillBar — Dumb Component
  * Muestra pastillas de estado con color y conteo.
  * Recibe un mapa { estado: count } y los metadatos de color.
  */
-defineProps({
-  statusCounts: { type: Object, required: true },
-  statusMeta: { type: Object, required: true },
-})
+interface Props {
+  statusCounts: Record<string, number>
+  statusMeta: Record<string, any>
+}
+
+defineProps<Props>()
 </script>
 
 <template>

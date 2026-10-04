@@ -14,6 +14,7 @@ export function useCrew() {
     pendingInvites,
     sentInvites,
     isLoading,
+    isLoaded,
     error,
     hasCrew,
     memberCount,
@@ -29,6 +30,7 @@ export function useCrew() {
     pendingInvites,
     sentInvites,
     isLoading,
+    isLoaded,
     error,
     hasCrew,
     memberCount,
@@ -46,5 +48,6 @@ export function useCrew() {
     declineInvite: crewStore.declineInvite,
     leaveCrew: crewStore.leaveCrew,
     deleteCrew: crewStore.deleteCrew,
+    reset: crewStore.reset,
   };
 }

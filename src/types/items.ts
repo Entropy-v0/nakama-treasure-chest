@@ -12,9 +12,30 @@ export type ItemEstado =
   | 'Abandonado'
   | 'En Pausa';
 
+export type DiaSemana =
+  | 'lunes'
+  | 'martes'
+  | 'miercoles'
+  | 'miércoles'
+  | 'jueves'
+  | 'viernes'
+  | 'sabado'
+  | 'sábado'
+  | 'domingo';
+
+export const DIAS_SEMANA: DiaSemana[] = [
+  'lunes',
+  'martes',
+  'miercoles',
+  'jueves',
+  'viernes',
+  'sabado',
+  'domingo',
+];
+
 import type { ProfileSummary } from './crew';
 
-export interface Item {
+export type Item = {
   id: number;
   user_id?: string | null;
   crew_id?: string | null;
@@ -28,14 +49,13 @@ export interface Item {
   anio?: number | null;
   autor?: string | null;
   estudio?: string | null;
-  categoria?: string | null;
-  etiquetas?: string[] | null;
   link?: string | null;
   progreso?: number | null;
+  dia_semana?: DiaSemana | null;
   created_at?: string;
   updated_at?: string;
   creator_profile?: ProfileSummary | null;
-}
+};
 
 export type ItemInsert = Omit<Item, 'id' | 'created_at' | 'updated_at'> & {
   id?: number;
@@ -43,11 +63,14 @@ export type ItemInsert = Omit<Item, 'id' | 'created_at' | 'updated_at'> & {
 
 export type ItemUpdate = Partial<ItemInsert>;
 
+export type ItemScope = 'todos' | 'compartido' | 'tripulacion' | 'personal';
+
 export interface ItemFilters {
   tipo?: ItemTipo | 'Todos';
   estado?: ItemEstado | 'Todos';
+  diaSemana?: DiaSemana | 'Todos';
   search?: string;
-  scope?: 'todos' | 'personal' | 'tripulacion';
+  scope?: ItemScope;
   crewId?: string | null;
   page?: number;
   perPage?: number;

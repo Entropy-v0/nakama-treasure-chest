@@ -1,6 +1,8 @@
 import { supabase, isSupabaseConfigured } from './client'
 import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js'
 import type { UpdateProfileData } from '../../types/auth'
+import type { Database } from '../../types/database'
+import { MOCK_USER_ID, getMockUser } from '../../mocks/mockUser'
 
 export interface AuthCredentials {
   email: string
@@ -102,14 +104,13 @@ export const authService = {
   async signIn({ email, password }: AuthCredentials): Promise<{ user: User | null; session: Session | null }> {
     if (!isSupabaseConfigured) {
       // Autenticación mock para desarrollo
-      const mockUser: User = {
-        id: 'mock-user-nakama-1',
-        app_metadata: {},
-        user_metadata: { username: email.split('@')[0] || 'Capitana' },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
+      const mockUser = getMockUser({
         email,
-      } as User
+        user_metadata: {
+          username: email.split('@')[0] || 'Capitán Nakama',
+          genero: 'masculino',
+        },
+      })
       setStoredMockUser(mockUser)
       notifyMockListeners('SIGNED_IN', mockUser)
       return {
@@ -139,14 +140,16 @@ export const authService = {
   async signInWithOAuth(provider: 'discord' | 'google' = 'discord'): Promise<void> {
     if (!isSupabaseConfigured) {
       // Mock OAuth para desarrollo local sin Supabase
-      const mockUser: User = {
-        id: 'mock-user-discord-1',
+      const isGoogle = provider === 'google'
+      const mockUser = getMockUser({
         app_metadata: { provider },
-        user_metadata: { username: 'NakamaDiscord', avatar_url: null },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        email: 'nakama@discord.gg',
-      } as User
+        user_metadata: {
+          username: isGoogle ? 'Tripulante Google' : 'Capitán Discord',
+          avatar_url: isGoogle ? 'https://lh3.googleusercontent.com/a/default-user=s96-c' : null,
+          genero: 'masculino',
+        },
+        email: isGoogle ? 'nakama.user@gmail.com' : 'nakama@discord.gg',
+      })
       setStoredMockUser(mockUser)
       notifyMockListeners('SIGNED_IN', mockUser)
       return
@@ -156,6 +159,10 @@ export const authService = {
       provider,
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
+        queryParams: provider === 'google' ? {
+          access_type: 'offline',
+          prompt: 'consent',
+        } : undefined,
       },
     })
 
@@ -167,17 +174,13 @@ export const authService = {
    */
   async signUp({ email, password, username, genero = 'femenino' }: RegisterCredentials): Promise<{ user: User | null; session: Session | null }> {
     if (!isSupabaseConfigured) {
-      const mockUser: User = {
-        id: 'mock-user-nakama-' + Date.now(),
-        app_metadata: {},
+      const mockUser = getMockUser({
+        email,
         user_metadata: {
           username: username || email.split('@')[0] || (genero === 'masculino' ? 'Capitán' : 'Capitana'),
           genero,
         },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        email,
-      } as User
+      })
       setStoredMockUser(mockUser)
       notifyMockListeners('SIGNED_IN', mockUser)
       return {
@@ -233,7 +236,7 @@ export const authService = {
 
     // 2. Sincronizar en la tabla public.profiles
     if (data.user) {
-      const profileUpdates: Record<string, any> = {
+      const profileUpdates: Database['public']['Tables']['profiles']['Update'] = {
         updated_at: new Date().toISOString(),
       }
       if (updates.username !== undefined) profileUpdates.username = updates.username

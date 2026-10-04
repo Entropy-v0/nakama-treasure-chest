@@ -1,30 +1,24 @@
-<script setup>
+<script setup lang="ts">
 /**
  * RecentItemCard — Dumb Component
  * Tarjeta individual de un ítem reciente con portada, link badge, progreso y tipo.
  */
-import { ref } from 'vue'
 import { ExternalLink, Copy, Check, Users } from '@lucide/vue'
+import type { Item } from '../../types/items'
+import { useClipboard } from '../../composables/useClipboard'
 
-defineProps({
-  item: { type: Object, required: true },
-  typeMeta: { type: Object, default: () => ({}) },
-  statusMeta: { type: Object, default: () => ({}) },
+interface Props {
+  item: Item
+  typeMeta?: Record<string, any>
+  statusMeta?: Record<string, any>
+}
+
+withDefaults(defineProps<Props>(), {
+  typeMeta: () => ({}),
+  statusMeta: () => ({}),
 })
 
-const copied = ref(false)
-const copyLink = async (url) => {
-  if (!url) return
-  try {
-    await navigator.clipboard.writeText(url)
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 1800)
-  } catch (err) {
-    console.error('Error copiando link:', err)
-  }
-}
+const { copied, copy } = useClipboard()
 </script>
 
 <template>
@@ -36,6 +30,7 @@ const copyLink = async (url) => {
         :src="item.portada"
         :alt="item.titulo"
         loading="lazy"
+        decoding="async"
         class="h-full w-full object-cover transition-transform duration-300 ease-out hover:scale-105"
       />
       <div v-else class="flex h-full w-full items-center justify-center bg-bg-elevated">
@@ -67,7 +62,7 @@ const copyLink = async (url) => {
           type="button"
           class="flex size-5 cursor-pointer items-center justify-center rounded text-text-secondary transition-colors hover:bg-white/20 hover:text-white"
           :title="copied ? '¡Copiado!' : 'Copiar enlace'"
-          @click.stop="copyLink(item.link)"
+          @click.stop="copy(item.link)"
         >
           <Check v-if="copied" :size="11" class="text-green" stroke-width="2.5" />
           <Copy v-else :size="11" stroke-width="2" />

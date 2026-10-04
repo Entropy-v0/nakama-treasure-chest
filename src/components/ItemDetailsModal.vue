@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * ItemDetailsModal.vue — Refactorizado con Modo Edición y Progreso
  * Permite visualizar y editar la información de la tarjeta (estado, puntuación, progreso/capítulo, nota, link, etc.),
@@ -16,41 +16,50 @@ import {
   Globe,
   Bookmark,
 } from '@lucide/vue'
-import { useItems } from '../composables/useItems.js'
-import { useAlert } from '../composables/useAlert.js'
+import { useItems } from '../composables/useItems'
+import { useAlert } from '../composables/useAlert'
+import { useClipboard } from '../composables/useClipboard'
+import type { Item, ItemEstado, DiaSemana } from '../types/items'
+import { DIAS_SEMANA } from '../types/items'
 import {
   TYPE_META,
   STATUS_META,
   STATUS_COLORS,
   ESTADOS,
-} from '../composables/useTypeMeta.js'
+} from '../composables/useTypeMeta'
 import StatusSelector from './items/StatusSelector.vue'
 import ScoreSelector from './items/ScoreSelector.vue'
 
-const props = defineProps({
-  item: { type: Object, required: true },
-})
+interface Props {
+  item: Item
+}
 
-const emit = defineEmits(['close'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
 const { updateItem, deleteItem } = useItems()
-const { showAlert } = useAlert()
+const { showAlert, showConfirm } = useAlert()
+const { copied, copy } = useClipboard()
 
-const copied = ref(false)
-const copyLink = async (url) => {
-  if (!url) return
-  try {
-    await navigator.clipboard.writeText(url)
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 1800)
-  } catch (err) {
-    console.error('Error al copiar:', err)
-  }
+interface EditFormState {
+  titulo: string
+  estado: ItemEstado
+  puntuacion: number | null
+  progreso: number | string | null
+  link: string
+  nota: string
+  anio: number | string
+  autor: string
+  estudio: string
+  portada: string
+  dia_semana: DiaSemana | null
 }
 
 const isEditing = ref(false)
-const editForm = ref({
+const editForm = ref<EditFormState>({
   titulo: '',
   estado: 'Pendiente',
   puntuacion: null,
@@ -61,6 +70,7 @@ const editForm = ref({
   autor: '',
   estudio: '',
   portada: '',
+  dia_semana: null,
 })
 
 const typeMeta = computed(() => TYPE_META[props.item.tipo] || { color: 'var(--text-muted)', label: props.item.tipo })
@@ -84,6 +94,7 @@ const startEditing = () => {
     autor: props.item.autor || '',
     estudio: props.item.estudio || '',
     portada: props.item.portada || '',
+    dia_semana: props.item.dia_semana || null,
   }
   isEditing.value = true
 }
@@ -97,7 +108,6 @@ const incrementProgress = async () => {
   const next = current + 1
   try {
     await updateItem(props.item.id, { progreso: next })
-    props.item.progreso = next
   } catch (err) {
     console.error('Error al incrementar progreso:', err)
   }
@@ -109,7 +119,6 @@ const decrementProgress = async () => {
   const next = current - 1
   try {
     await updateItem(props.item.id, { progreso: next })
-    props.item.progreso = next
   } catch (err) {
     console.error('Error al disminuir progreso:', err)
   }
@@ -125,25 +134,31 @@ const handleSave = async () => {
     return
   }
 
-  const updates = {
-    ...editForm.value,
+  const updates: Partial<Item> = {
+    titulo: editForm.value.titulo.trim(),
+    estado: editForm.value.estado,
+    puntuacion: editForm.value.puntuacion,
+    progreso: editForm.value.progreso !== null && editForm.value.progreso !== '' ? parseInt(String(editForm.value.progreso), 10) : null,
     link: editForm.value.link?.trim() || null,
-    progreso: editForm.value.progreso !== null && editForm.value.progreso !== '' ? parseInt(editForm.value.progreso) : null,
-    anio: editForm.value.anio ? parseInt(editForm.value.anio) : null,
+    nota: editForm.value.nota || null,
+    anio: editForm.value.anio ? parseInt(String(editForm.value.anio), 10) : null,
+    autor: editForm.value.autor || null,
+    estudio: editForm.value.estudio || null,
+    portada: editForm.value.portada || null,
+    dia_semana: editForm.value.dia_semana || null,
   }
 
   try {
     await updateItem(props.item.id, updates)
-    Object.assign(props.item, updates)
     isEditing.value = false
     await showAlert({
       type: 'success',
       title: '¡Actualizado!',
-      message: `La información de "${props.item.titulo}" fue actualizada.`,
+      message: `La información de "${editForm.value.titulo}" fue actualizada.`,
     })
   } catch (err) {
     await showAlert({
-      type: 'warning',
+      type: 'error',
       title: 'Error',
       message: 'No se pudo guardar la información.',
     })
@@ -151,10 +166,12 @@ const handleSave = async () => {
 }
 
 const handleDelete = async () => {
-  const confirmed = await showAlert({
+  const confirmed = await showConfirm({
     type: 'warning',
-    title: 'Eliminar',
-    message: `¿Eliminar "${props.item.titulo}" de tu colección?`,
+    title: 'Eliminar de la colección',
+    message: `¿Deseas eliminar "${props.item.titulo}" permanentemente?`,
+    confirmText: 'Eliminar',
+    cancelText: 'Cancelar',
   })
   if (confirmed) {
     await deleteItem(props.item.id)
@@ -293,7 +310,7 @@ const handleDelete = async () => {
                   type="button"
                   class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-bg-elevated px-2.5 py-1 text-xs font-semibold text-text-secondary transition-all hover:border-green-light hover:text-green"
                   :title="copied ? '¡Copiado!' : 'Copiar enlace'"
-                  @click="copyLink(item.link)"
+                  @click="copy(item.link)"
                 >
                   <Check v-if="copied" :size="13" class="text-green" stroke-width="2.5" />
                   <Copy v-else :size="13" stroke-width="2" />
@@ -328,7 +345,7 @@ const handleDelete = async () => {
                 <div class="flex flex-col leading-tight">
                   <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">{{ progresoLabel }} actual</span>
                   <span class="font-heading text-lg font-bold text-text-primary">
-                    <template v-if="item.progreso !== null && item.progreso !== undefined && item.progreso !== ''">
+                    <template v-if="item.progreso !== null && item.progreso !== undefined">
                       {{ progresoLabel }} {{ item.progreso }}
                     </template>
                     <template v-else>
@@ -372,9 +389,9 @@ const handleDelete = async () => {
                 <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Estudio</span>
                 <span class="text-sm font-medium text-text-primary">{{ item.estudio }}</span>
               </div>
-              <div v-if="item.categoria" class="flex flex-col gap-0.5">
-                <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Categoría</span>
-                <span class="text-sm font-medium text-text-primary">{{ item.categoria }}</span>
+              <div v-if="item.dia_semana" class="flex flex-col gap-0.5">
+                <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Emisión</span>
+                <span class="text-sm font-medium capitalize text-text-primary">{{ item.dia_semana }}</span>
               </div>
             </div>
 
@@ -469,6 +486,23 @@ const handleDelete = async () => {
               <div class="flex flex-col gap-1.5">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Puntuación (1-10)</label>
                 <ScoreSelector v-model="editForm.puntuacion" />
+              </div>
+
+              <!-- Día de emisión semanal (Calendario) -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Día de emisión semanal</label>
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    v-for="dia in DIAS_SEMANA"
+                    :key="dia"
+                    type="button"
+                    class="rounded-lg border px-2.5 py-1 text-xs font-semibold capitalize transition-all cursor-pointer"
+                    :class="editForm.dia_semana === dia ? 'border-green bg-green/10 text-green font-bold shadow-sm' : 'border-white/5 bg-bg-card text-text-muted hover:text-white'"
+                    @click="editForm.dia_semana = editForm.dia_semana === dia ? null : dia"
+                  >
+                    {{ dia }}
+                  </button>
+                </div>
               </div>
 
               <!-- Enlace web / Link -->

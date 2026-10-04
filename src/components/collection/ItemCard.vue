@@ -1,34 +1,29 @@
-<script setup>
+<script setup lang="ts">
 /**
  * ItemCard — Dumb Component
  * Tarjeta individual de la colección con portada, overlay hover, enlace directo, copiado y progreso.
  * Emite click para abrir modal de detalles.
  */
-import { ref } from 'vue'
 import { ExternalLink, Copy, Check, Users } from '@lucide/vue'
+import type { Item } from '../../types/items'
+import { useClipboard } from '../../composables/useClipboard'
 
-defineProps({
-  item: { type: Object, required: true },
-  typeMeta: { type: Object, default: () => ({}) },
-  statusColor: { type: String, default: 'var(--zoro-green)' },
+interface Props {
+  item: Item
+  typeMeta?: Record<string, any>
+  statusColor?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  typeMeta: () => ({}),
+  statusColor: 'var(--zoro-green)',
 })
 
-defineEmits(['select'])
+defineEmits<{
+  select: [item: Item]
+}>()
 
-const copied = ref(false)
-
-const copyLink = async (url) => {
-  if (!url) return
-  try {
-    await navigator.clipboard.writeText(url)
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 1800)
-  } catch (err) {
-    console.error('Error copiando link:', err)
-  }
-}
+const { copied, copy } = useClipboard()
 </script>
 
 <template>
@@ -43,6 +38,7 @@ const copyLink = async (url) => {
         :src="item.portada"
         :alt="item.titulo"
         loading="lazy"
+        decoding="async"
         class="h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-105"
       />
       <div v-else class="flex h-full w-full items-center justify-center bg-bg-elevated">
@@ -97,7 +93,7 @@ const copyLink = async (url) => {
           <button
             class="flex items-center gap-1 rounded bg-white/10 px-2 py-1 text-[10.5px] font-semibold text-text-primary transition-colors hover:bg-white/20"
             :title="copied ? '¡Copiado al portapapeles!' : 'Copiar enlace'"
-            @click="copyLink(item.link)"
+            @click="copy(item.link)"
           >
             <component :is="copied ? Check : Copy" :size="11" :class="copied ? 'text-green' : ''" />
             {{ copied ? 'Listo' : 'Copiar' }}

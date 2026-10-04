@@ -61,46 +61,57 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  let initPromise: Promise<void> | null = null
+
   /**
    * Inicializa la sesión y configura el listener de cambios de auth
    */
   const initialize = async () => {
     if (isInitialized.value) return
+    if (initPromise) return initPromise
 
-    isLoading.value = true
-    error.value = null
+    initPromise = (async () => {
+      isLoading.value = true
+      error.value = null
 
-    try {
-      const { session: currentSession, user: currentUser } = await authService.getSession()
-      session.value = currentSession
-      user.value = currentUser
+      try {
+        const { session: currentSession, user: currentUser } = await authService.getSession()
+        session.value = currentSession
+        user.value = currentUser
 
-      if (currentUser?.id) {
-        await fetchProfile(currentUser.id)
-      }
+        if (currentUser?.id) {
+          await fetchProfile(currentUser.id)
+        }
 
-      // Registrar listener global si aún no está activo
-      if (!authSubscription) {
-        authSubscription = authService.onAuthStateChange(
-          async (event: AuthChangeEvent, newSession: Session | null) => {
-            session.value = newSession
-            user.value = newSession?.user ?? null
-            if (newSession?.user?.id) {
-              await fetchProfile(newSession.user.id)
-            } else {
-              profile.value = null
+        // Registrar listener global si aún no está activo
+        if (!authSubscription) {
+          authSubscription = authService.onAuthStateChange(
+            (_event: AuthChangeEvent, newSession: Session | null) => {
+              session.value = newSession
+              user.value = newSession?.user ?? null
+              // Diferir la sincronización fuera del ciclo síncrono del callback de Supabase
+              if (newSession?.user?.id) {
+                setTimeout(() => {
+                  fetchProfile(newSession.user.id)
+                }, 0)
+              } else {
+                profile.value = null
+              }
+              isLoading.value = false
             }
-            isLoading.value = false
-          }
-        )
+          )
+        }
+      } catch (err: any) {
+        console.error('Error inicializando autenticación:', err)
+        error.value = err.message || 'Error al verificar la sesión'
+      } finally {
+        isLoading.value = false
+        isInitialized.value = true
+        initPromise = null
       }
-    } catch (err: any) {
-      console.error('Error inicializando autenticación:', err)
-      error.value = err.message || 'Error al verificar la sesión'
-    } finally {
-      isLoading.value = false
-      isInitialized.value = true
-    }
+    })()
+
+    return initPromise
   }
 
   /**
@@ -174,6 +185,12 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
       session.value = null
       profile.value = null
+      try {
+        const { useCrewStore } = await import('./crew')
+        useCrewStore().reset()
+      } catch {
+        // no-op
+      }
     } catch (err: any) {
       error.value = err.message || 'Error al cerrar sesión'
       throw err

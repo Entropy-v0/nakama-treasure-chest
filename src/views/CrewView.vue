@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * CrewView.vue — Gestión de Tripulación (Nakama Network / Modo Pareja)
  * Vista con el mismo diseño, estética y estructura visual que el Dashboard y la Colección:
@@ -26,9 +26,10 @@ import {
   User,
   Trash2
 } from '@lucide/vue'
-import { useCrew } from '../../composables/useCrew'
-import { useAuthStore } from '../../stores/auth'
-import { useAlert } from '../../composables/useAlert'
+import { useCrew } from '../composables/useCrew'
+import { useAuthStore } from '../stores/auth'
+import { useAlert } from '../composables/useAlert'
+import PageContainer from '../components/layout/PageContainer.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -94,7 +95,7 @@ const handleSaveCrewName = async () => {
       title: '¡Nombre actualizado!',
       message: `Tu tripulación ahora se llama "${crew.value?.name}".`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -124,7 +125,7 @@ const handleCreateCrew = async () => {
       title: '¡Tripulación fundada!',
       message: `¡Bienvenido a bordo de "${crew.value?.name}"! Ahora puedes invitar a tus nakamas.`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -164,7 +165,7 @@ const handleSendInvite = async () => {
       title: '¡Invitación enviada!',
       message: `Hemos enviado una invitación a ${email}. Cuando inicie sesión con ese correo, podrá unirse a la tripulación.`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error al invitar',
@@ -175,7 +176,7 @@ const handleSendInvite = async () => {
   }
 }
 
-const handleCancelInvite = async (inviteId) => {
+const handleCancelInvite = async (inviteId: string) => {
   const confirmed = await showConfirm({
     title: '¿Cancelar invitación?',
     message: 'Esta invitación quedará revocada y ya no podrá ser utilizada.',
@@ -190,7 +191,7 @@ const handleCancelInvite = async (inviteId) => {
       title: 'Invitación cancelada',
       message: 'La invitación fue retirada con éxito.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -201,7 +202,7 @@ const handleCancelInvite = async (inviteId) => {
   }
 }
 
-const handleAcceptInvite = async (invite) => {
+const handleAcceptInvite = async (invite: any) => {
   isActionLoading.value = true
   try {
     await acceptInvite(invite)
@@ -210,7 +211,7 @@ const handleAcceptInvite = async (invite) => {
       title: '¡Bienvenido a la tripulación!',
       message: `Te has unido exitosamente a "${invite.crew?.name || 'la tripulación'}".`,
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -221,7 +222,7 @@ const handleAcceptInvite = async (invite) => {
   }
 }
 
-const handleDeclineInvite = async (inviteId) => {
+const handleDeclineInvite = async (inviteId: string) => {
   isActionLoading.value = true
   try {
     await declineInvite(inviteId)
@@ -230,7 +231,7 @@ const handleDeclineInvite = async (inviteId) => {
       title: 'Invitación rechazada',
       message: 'Has declinado unirte a esta tripulación.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -256,7 +257,7 @@ const handleLeaveCrew = async () => {
       title: 'Has dejado la tripulación',
       message: 'Ahora navegas como lobo solitario.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -283,7 +284,7 @@ const handleDeleteCrew = async () => {
       title: 'Tripulación disuelta',
       message: 'La tripulación ha sido eliminada con éxito.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
@@ -294,16 +295,16 @@ const handleDeleteCrew = async () => {
   }
 }
 
-const getMemberInitial = (member) => {
-  const name = member.profile?.username || 'N'
+const getMemberInitial = (member: any) => {
+  const name = member?.profile?.username || 'N'
   return name.charAt(0).toUpperCase()
 }
 
-const getMemberDisplayName = (member) => {
-  return member.profile?.username || 'Nakama anónimo'
+const getMemberDisplayName = (member: any) => {
+  return member?.profile?.username || 'Nakama anónimo'
 }
 
-const formatDate = (isoString) => {
+const formatDate = (isoString?: string | null) => {
   if (!isoString) return ''
   try {
     const d = new Date(isoString)
@@ -315,45 +316,45 @@ const formatDate = (isoString) => {
 </script>
 
 <template>
-  <div class="box-border min-h-screen px-10 py-8 max-md:px-4 max-md:py-6">
+  <PageContainer
+    title="Tripulación"
+    subtitle="Gestión del equipo, nakamas a bordo e invitaciones"
+  >
+    <template #header-actions v-if="hasCrew">
+      <button
+        v-if="isCaptain"
+        type="button"
+        :disabled="isActionLoading"
+        class="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 font-body text-xs font-semibold text-red-400 transition-all duration-200 hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/20 cursor-pointer disabled:opacity-50"
+        title="Disolver y eliminar la tripulación permanentemente"
+        @click="handleDeleteCrew"
+      >
+        <Trash2 :size="14" />
+        <span>Eliminar tripulación</span>
+      </button>
 
-    <!-- Header Principal (Mismo diseño que Dashboard y Colección) -->
-    <header class="mb-8 flex items-center justify-between border-b border-white/5 pb-5 max-md:flex-col max-md:items-start max-md:gap-4">
-      <div>
-        <h1 class="text-[2rem] font-bold text-white">Tripulación</h1>
-        <p class="mt-1 text-sm text-text-muted">
-          Gestión del equipo, nakamas a bordo e invitaciones
-        </p>
-      </div>
-
-      <div v-if="hasCrew" class="flex items-center gap-3">
-        <button
-          v-if="isCaptain"
-          type="button"
-          :disabled="isActionLoading"
-          class="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 font-body text-xs font-semibold text-red-400 transition-all duration-200 hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/20 cursor-pointer disabled:opacity-50"
-          title="Disolver y eliminar la tripulación permanentemente"
-          @click="handleDeleteCrew"
-        >
-          <Trash2 :size="14" />
-          <span>Eliminar tripulación</span>
-        </button>
-
-        <button
-          type="button"
-          :disabled="isActionLoading"
-          class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-body text-xs font-semibold text-text-muted transition-all duration-200 hover:text-state-dropped hover:border-red-500/30 hover:bg-red-500/10 cursor-pointer disabled:opacity-50"
-          title="Abandonar esta tripulación"
-          @click="handleLeaveCrew"
-        >
-          <LogOut :size="14" />
-          <span>Abandonar tripulación</span>
-        </button>
-      </div>
-    </header>
+      <button
+        type="button"
+        :disabled="isActionLoading"
+        class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-body text-xs font-semibold text-text-muted transition-all duration-200 hover:text-state-dropped hover:border-red-500/30 hover:bg-red-500/10 cursor-pointer disabled:opacity-50"
+        title="Abandonar esta tripulación"
+        @click="handleLeaveCrew"
+      >
+        <LogOut :size="14" />
+        <span>Abandonar tripulación</span>
+      </button>
+    </template>
 
     <!-- ── CASO 1: NO TIENE TRIPULACIÓN ACTIVA ── -->
     <div v-if="!hasCrew" class="flex flex-col gap-10">
+
+      <!-- Aviso del correo del usuario para recibir invitaciones -->
+      <div class="flex items-center gap-3 rounded-[14px] border border-white/5 bg-bg-card p-4 max-w-xl text-xs text-text-muted">
+        <Mail :size="16" class="text-green shrink-0" />
+        <p>
+          Tu correo para recibir invitaciones es: <strong class="text-white">{{ authStore.userEmail || 'tu correo registrado' }}</strong>. El Capitán debe enviar la invitación a esta dirección exacta.
+        </p>
+      </div>
 
       <!-- Invitaciones Recibidas Pendientes -->
       <section v-if="pendingInvites.length > 0">
@@ -475,8 +476,8 @@ const formatDate = (isoString) => {
             <div class="my-2">
               <!-- Vista normal de nombre -->
               <div v-if="!isEditingName" class="flex items-center justify-between gap-2">
-                <span class="text-xl font-bold text-white truncate" :title="crew.name">
-                  {{ crew.name }}
+                <span class="text-xl font-bold text-white truncate" :title="crew?.name">
+                  {{ crew?.name }}
                 </span>
                 <button
                   type="button"
@@ -515,7 +516,7 @@ const formatDate = (isoString) => {
               </form>
             </div>
 
-            <span class="text-[11px] text-text-muted">Creada el {{ formatDate(crew.created_at) }}</span>
+            <span class="text-[11px] text-text-muted">Creada el {{ formatDate(crew?.created_at) }}</span>
           </div>
 
           <!-- Card: Nakamas a Bordo -->
@@ -717,5 +718,5 @@ const formatDate = (isoString) => {
 
     </div>
 
-  </div>
+  </PageContainer>
 </template>

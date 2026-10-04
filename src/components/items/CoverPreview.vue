@@ -1,11 +1,16 @@
-<script setup>
+<script setup lang="ts">
 /**
  * CoverPreview — Dumb Component
  * Previsualización de portada de un ítem con fallback a icono por tipo.
  */
-defineProps({
-  url: { type: String, default: '' },
-  typeMeta: { type: Object, default: () => ({}) },
+interface Props {
+  url?: string | null
+  typeMeta?: Record<string, any>
+}
+
+withDefaults(defineProps<Props>(), {
+  url: '',
+  typeMeta: () => ({}),
 })
 </script>
 

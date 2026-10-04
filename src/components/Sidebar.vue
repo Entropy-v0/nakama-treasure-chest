@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Sidebar.vue — Refactorizado (Fase 3: Pinia + Vue Router)
  * Barra de navegación lateral de escritorio y barra inferior en móvil.
@@ -8,27 +8,30 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import katanaLogo from '../assets/katana_logo.png'
-import { Heart, LogOut, Pencil, Ship } from '@lucide/vue'
+import { Heart, LogOut, Pencil, Ship, Calendar as CalendarIcon } from '@lucide/vue'
 import EditProfileModal from './auth/EditProfileModal.vue'
 import { useCrew } from '../composables/useCrew'
 
 const isEditProfileOpen = ref(false)
 const { hasPendingInvites } = useCrew()
 
-const props = defineProps({
-  currentView: {
-    type: String,
-    default: 'dashboard',
-  },
+interface Props {
+  currentView?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  currentView: 'dashboard',
 })
 
-const emit = defineEmits(['change-view'])
+const emit = defineEmits<{
+  'change-view': [viewName: string]
+}>()
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const isViewActive = (path, viewName) => {
+const isViewActive = (path: string, viewName?: string) => {
   if (route?.path) {
     if (path === '/dashboard') return route.path === '/dashboard' || route.path === '/'
     return route.path === path
@@ -36,8 +39,8 @@ const isViewActive = (path, viewName) => {
   return props.currentView === viewName
 }
 
-const navigateTo = (path, viewName) => {
-  emit('change-view', viewName)
+const navigateTo = (path: string, viewName?: string) => {
+  if (viewName) emit('change-view', viewName)
   router.push(path)
 }
 
@@ -52,7 +55,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <aside class="flex h-screen w-[260px] shrink-0 flex-col overflow-hidden border-r border-[var(--border-color)] bg-bg-surface p-0 max-md:h-[70px] max-md:w-full max-md:flex-row max-md:items-center max-md:justify-around max-md:border-t max-md:border-r-0 max-md:px-4 max-md:z-[100]">
+  <aside class="flex h-screen w-[260px] shrink-0 flex-col overflow-hidden border-r border-[var(--border-color)] bg-bg-surface p-0 max-md:h-[70px] max-md:w-full max-md:flex-row max-md:items-center max-md:justify-around max-md:border-t max-md:border-r-0 max-md:px-2 max-md:z-40">
 
     <!-- Brand / Logo (oculto en móvil) -->
     <div class="border-b border-white/5 px-5 pt-6 pb-5 max-md:hidden">
@@ -67,7 +70,11 @@ const handleLogout = async () => {
 
     <!-- User Profile (oculto en móvil) -->
     <div class="flex items-center gap-3 border-b border-white/5 px-5 py-4 max-md:hidden">
-      <div class="relative flex size-[38px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated shadow-sm">
+      <div
+        class="relative flex size-[38px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated shadow-sm transition-colors hover:border-green-light"
+        title="Editar perfil"
+        @click="isEditProfileOpen = true"
+      >
         <img
           v-if="authStore.avatarUrl"
           :src="authStore.avatarUrl"
@@ -110,7 +117,7 @@ const handleLogout = async () => {
     <nav class="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pt-3 max-md:w-full max-md:flex-row max-md:items-center max-md:justify-around max-md:overflow-visible max-md:p-0">
 
       <!-- Dashboard -->
-      <div class="mb-2 max-md:m-0">
+      <div class="mb-2 max-md:m-0 max-md:order-1">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
@@ -128,7 +135,7 @@ const handleLogout = async () => {
       </div>
 
       <!-- Listado -->
-      <div class="mb-2 max-md:m-0">
+      <div class="mb-2 max-md:m-0 max-md:order-2">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
@@ -145,9 +152,25 @@ const handleLogout = async () => {
           </li>
         </ul>
       </div>
+      
+      <!-- Calendario -->
+      <div class="mb-2 max-md:m-0 max-md:order-4">
+        <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
+          <li
+            class="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
+            :class="{
+              'bg-[var(--zoro-green-glow)] font-semibold text-green shadow-[inset_2px_0_0_var(--green)] max-md:bg-transparent max-md:shadow-none': isViewActive('/calendar', 'calendar')
+            }"
+            @click="navigateTo('/calendar', 'calendar')"
+          >
+            <CalendarIcon :size="17" class="shrink-0" />
+            Calendario
+          </li>
+        </ul>
+      </div>
 
-      <!-- Tripulación (Menú Dedicado) -->
-      <div class="mb-2 max-md:m-0">
+      <!-- Crew -->
+      <div class="mb-2 max-md:m-0 max-md:order-5">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="flex cursor-pointer select-none items-center justify-between rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
@@ -157,7 +180,7 @@ const handleLogout = async () => {
             @click="navigateTo('/crew', 'crew')"
           >
             <div class="flex items-center gap-2.5 max-md:flex-col max-md:gap-1">
-              <Ship :size="17" class="shrink-0 text-white" />
+              <Ship :size="17" class="shrink-0" />
               <span>Tripulación</span>
             </div>
             <span
@@ -169,10 +192,11 @@ const handleLogout = async () => {
         </ul>
       </div>
 
-      <!-- Agregar -->
-      <div class="mb-2 max-md:m-0">
+      <!-- Agregar (Centrado en móvil entre Listado y Calendario) -->
+      <div class="mb-2 max-md:m-0 max-md:order-3">
         <button
-          class="my-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[var(--zoro-green-border)] bg-[var(--zoro-green-glow)] px-4 py-2.5 font-body text-[13.5px] font-semibold text-white transition-all duration-200 hover:border-green-light hover:bg-green-dark hover:text-text-primary hover:shadow-[0_0_24px_rgba(61,122,85,0.1)] max-md:m-0 max-md:size-12 max-md:rounded-full max-md:p-0 max-md:text-[0px]"
+          class="my-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[var(--zoro-green-border)] bg-[var(--zoro-green-glow)] px-4 py-2.5 font-body text-[13.5px] font-semibold text-white transition-all duration-200 hover:border-green-light hover:bg-green-dark hover:text-text-primary hover:shadow-[0_0_24px_rgba(61,122,85,0.1)] max-md:m-0 max-md:size-11 max-md:rounded-full max-md:p-0 max-md:text-[0px] max-md:shadow-[0_0_12px_var(--zoro-green-glow)]"
+          title="Agregar contenido"
           @click="navigateTo('/add', 'add')"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="shrink-0">
@@ -181,6 +205,7 @@ const handleLogout = async () => {
           <span class="max-md:hidden">Agregar contenido</span>
         </button>
       </div>
+
     </nav>
 
     <!-- Footer (oculto en móvil) -->

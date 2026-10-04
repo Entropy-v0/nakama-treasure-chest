@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * EditProfileModal.vue — Dumb/Smart Component Híbrido
  * Permite al usuario editar su nombre, enlace de avatar y género/título a bordo.
@@ -10,16 +10,24 @@ import { useAuthStore } from '../../stores/auth'
 import { useAlert } from '../../composables/useAlert'
 import { X, Check, Camera, User, Anchor, Swords, Trash2 } from '@lucide/vue'
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  close: []
+}>()
 
 const router = useRouter()
 const authStore = useAuthStore()
 const { showAlert, showConfirm } = useAlert()
 
-const form = ref({
+interface FormState {
+  username: string
+  avatar_url: string
+  genero: 'femenino' | 'masculino'
+}
+
+const form = ref<FormState>({
   username: authStore.userName || '',
   avatar_url: authStore.avatarUrl || '',
-  genero: authStore.userGenero || 'femenino',
+  genero: (authStore.userGenero as 'femenino' | 'masculino') || 'femenino',
 })
 
 const isSubmitting = ref(false)
@@ -58,11 +66,11 @@ const handleSave = async () => {
     })
 
     emit('close')
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
-      message: err.message || 'No se pudo actualizar el perfil.',
+      message: err?.message || 'No se pudo actualizar el perfil.',
     })
   } finally {
     isSubmitting.value = false
@@ -87,11 +95,11 @@ const handleDeleteAccount = async () => {
       title: 'Cuenta eliminada',
       message: 'Tu cuenta y perfil han sido eliminados correctamente.',
     })
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error',
-      message: err.message || 'No se pudo eliminar la cuenta.',
+      message: err?.message || 'No se pudo eliminar la cuenta.',
     })
   } finally {
     isSubmitting.value = false
@@ -101,7 +109,7 @@ const handleDeleteAccount = async () => {
 
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-6 backdrop-blur-md max-md:p-4"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-6 backdrop-blur-md max-md:p-4"
     @click.self="$emit('close')"
   >
     <div class="relative w-full max-w-[480px] overflow-hidden rounded-[20px] border border-[var(--border-color)] bg-bg-surface p-7 shadow-[0_20px_48px_rgba(0,0,0,0.7),var(--shadow-glow)] max-md:p-5">

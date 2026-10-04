@@ -1,14 +1,20 @@
-<script setup>
+<script setup lang="ts">
 /**
  * StatusSelector — Dumb Component
  * Selector de estados en forma de píldoras interactivas.
  */
-defineProps({
-  statuses: { type: Array, required: true },
-  statusColors: { type: Object, default: () => ({}) },
+import type { ItemEstado } from '../../types/items'
+
+interface Props {
+  statuses: (ItemEstado | string)[]
+  statusColors?: Record<string, string>
+}
+
+withDefaults(defineProps<Props>(), {
+  statusColors: () => ({}),
 })
 
-const model = defineModel({ type: String, required: true })
+const model = defineModel<ItemEstado | string>({ required: true })
 </script>
 
 <template>

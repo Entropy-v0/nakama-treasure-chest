@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 /**
  * SearchBar — Dumb Component
  * Barra de búsqueda con ícono integrado.
  * Usa v-model para binding bidireccional con el componente padre.
  */
-const model = defineModel({ type: String, default: '' })
+const model = defineModel<string>({ default: '' })
 </script>
 
 <template>

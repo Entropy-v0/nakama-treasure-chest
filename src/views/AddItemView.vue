@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * AddItem.vue — Smart Component (refactorizado)
  * Orquesta la creación de un nuevo elemento en la colección.
@@ -10,6 +10,10 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItems } from '../composables/useItems.js'
 import { useAlert } from '../composables/useAlert.js'
+import { useMediaSearch } from '../composables/useMediaSearch'
+import type { MediaSearchResult } from '../services/api/mediaSearch.service'
+import type { ItemTipo, ItemEstado, DiaSemana } from '../types/items'
+import { DIAS_SEMANA } from '../types/items'
 import {
   TIPOS,
   ESTADOS,
@@ -17,27 +21,42 @@ import {
   TYPE_META,
 } from '../composables/useTypeMeta.js'
 
-import TypeSelector from './items/TypeSelector.vue'
-import StatusSelector from './items/StatusSelector.vue'
-import ScoreSelector from './items/ScoreSelector.vue'
-import CoverPreview from './items/CoverPreview.vue'
-import { mediaSearchService } from '../services/api/mediaSearch.service'
+import PageContainer from '../components/layout/PageContainer.vue'
+import TypeSelector from '../components/items/TypeSelector.vue'
+import StatusSelector from '../components/items/StatusSelector.vue'
+import ScoreSelector from '../components/items/ScoreSelector.vue'
+import CoverPreview from '../components/items/CoverPreview.vue'
 import { useCrew } from '../composables/useCrew'
 import { Sparkles, Users, User, Loader2 } from '@lucide/vue'
 
-const emit = defineEmits(['item-added'])
+const emit = defineEmits<{
+  'item-added': []
+}>()
 const router = useRouter()
 const { addItem } = useItems()
 const { showAlert } = useAlert()
 const { crew, hasCrew } = useCrew()
+const { results: searchResults, isSearching, showSuggestions, search: triggerMediaSearch } = useMediaSearch(450)
 
-const shareScope = ref(hasCrew.value ? 'tripulacion' : 'personal')
-const searchResults = ref([])
-const isSearching = ref(false)
-const showSuggestions = ref(false)
-let searchTimeout = null
+const shareScope = ref<'tripulacion' | 'personal'>(hasCrew.value ? 'tripulacion' : 'personal')
 
-const form = ref({
+interface FormState {
+  titulo: string
+  tipo: ItemTipo
+  portada: string
+  link: string
+  progreso: number | string | null
+  estado: ItemEstado
+  puntuacion: number | null
+  generos: string
+  nota: string
+  anio: number | string
+  autor: string
+  estudio: string
+  dia_semana: DiaSemana | null
+}
+
+const form = ref<FormState>({
   titulo:     '',
   tipo:       'Anime',
   portada:    '',
@@ -50,8 +69,7 @@ const form = ref({
   anio:       '',
   autor:      '',
   estudio:    '',
-  categoria:  null,
-  etiquetas:  [],
+  dia_semana: null,
 })
 
 const showMangaFields = computed(() => form.value.tipo === 'Manga')
@@ -70,27 +88,10 @@ const progresoPlaceholder = computed(() => {
 })
 
 const handleTitleInput = () => {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  if (!form.value.titulo || form.value.titulo.trim().length < 2) {
-    searchResults.value = []
-    showSuggestions.value = false
-    return
-  }
-
-  searchTimeout = setTimeout(async () => {
-    isSearching.value = true
-    try {
-      searchResults.value = await mediaSearchService.search(form.value.titulo, form.value.tipo)
-      showSuggestions.value = searchResults.value.length > 0
-    } catch (e) {
-      console.warn('Error en búsqueda de autocompletado:', e)
-    } finally {
-      isSearching.value = false
-    }
-  }, 450)
+  triggerMediaSearch(form.value.titulo, form.value.tipo)
 }
 
-const selectSuggestion = (result) => {
+const selectSuggestion = (result: MediaSearchResult) => {
   form.value.titulo = result.titulo
   if (result.portada) form.value.portada = result.portada
   if (result.anio) form.value.anio = result.anio
@@ -119,7 +120,7 @@ const handleSubmit = async () => {
 
   const isShared = hasCrew.value && shareScope.value === 'tripulacion' && Boolean(crew.value?.id)
   const crewPayload = isShared
-    ? { crew_id: crew.value.id }
+    ? { crew_id: crew.value?.id || null }
     : { crew_id: null }
 
   try {
@@ -127,9 +128,9 @@ const handleSubmit = async () => {
       ...form.value,
       ...crewPayload,
       link: form.value.link?.trim() || null,
-      progreso: form.value.progreso !== null && form.value.progreso !== '' ? parseInt(form.value.progreso) : null,
+      progreso: form.value.progreso !== null && form.value.progreso !== '' ? parseInt(String(form.value.progreso), 10) : null,
       generos: generosList,
-      anio: form.value.anio ? parseInt(form.value.anio) : null,
+      anio: form.value.anio ? parseInt(String(form.value.anio), 10) : null,
     })
 
     await showAlert({ 
@@ -141,27 +142,26 @@ const handleSubmit = async () => {
     form.value = {
       titulo: '', tipo: 'Anime', portada: '', link: '', progreso: null, estado: 'Pendiente',
       puntuacion: null, generos: '', nota: '', anio: '', autor: '', estudio: '',
-      categoria: null, etiquetas: [],
+      dia_semana: null,
     }
 
     emit('item-added')
     router.push('/collection')
-  } catch (err) {
+  } catch (err: any) {
     await showAlert({
       type: 'warning',
       title: 'Error al agregar',
-      message: err.message || 'No se pudo guardar el elemento.',
+      message: err?.message || 'No se pudo guardar el elemento.',
     })
   }
 }
 </script>
 
 <template>
-  <div class="box-border min-h-screen max-w-[1000px] px-10 py-8 max-md:px-4 max-md:py-6">
-    <header class="mb-8 border-b border-white/5 pb-5">
-      <h1 class="font-heading text-[2rem] font-bold text-text-primary">Agregar contenido</h1>
-    </header>
-
+  <PageContainer
+    title="Agregar contenido"
+    max-width="max-w-[1000px]"
+  >
     <form class="w-full" @submit.prevent="handleSubmit">
       <div class="grid grid-cols-2 gap-12 max-md:grid-cols-1 max-md:gap-8">
 
@@ -307,6 +307,25 @@ const handleSubmit = async () => {
             <ScoreSelector v-model="form.puntuacion" />
           </div>
 
+          <!-- Día de emisión semanal (Calendario) -->
+          <div v-if="form.tipo !== 'Película'" class="flex flex-col gap-2">
+            <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary">
+              Día de emisión semanal <span class="font-normal text-xs text-text-muted">(para el Calendario)</span>
+            </label>
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                v-for="dia in DIAS_SEMANA"
+                :key="dia"
+                type="button"
+                class="rounded-lg border px-3 py-1.5 text-xs font-semibold capitalize transition-all cursor-pointer"
+                :class="form.dia_semana === dia ? 'border-green bg-green/10 text-green font-bold shadow-sm' : 'border-white/5 bg-bg-card text-text-muted hover:text-white'"
+                @click="form.dia_semana = form.dia_semana === dia ? null : dia"
+              >
+                {{ dia }}
+              </button>
+            </div>
+          </div>
+
           <!-- Progreso / Capítulo o Episodio (no aplica a Película) -->
           <div v-if="form.tipo !== 'Película'" class="flex flex-col gap-2">
             <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary" for="progreso">
@@ -376,7 +395,7 @@ const handleSubmit = async () => {
         </div>
 
         <!-- ── Columna derecha ── -->
-        <div class="flex flex-col gap-[22px] max-md:-order-1">
+        <div class="flex flex-col gap-[22px]">
 
           <!-- URL de portada -->
           <div class="flex flex-col gap-2">
@@ -434,5 +453,5 @@ const handleSubmit = async () => {
         </div>
       </div>
     </form>
-  </div>
+  </PageContainer>
 </template>

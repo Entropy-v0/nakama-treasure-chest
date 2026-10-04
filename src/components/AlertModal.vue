@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 /**
- * AlertModal.vue — Refactorizado (Fase 1)
+ * AlertModal.vue — Refactorizado (Fase 2)
  * Modal global para confirmaciones y alertas de la aplicación.
- * Migrado completamente a utilidades de Tailwind CSS.
+ * Muestra el botón Cancelar estrictamente cuando isConfirm es true.
  */
-import { useAlert } from '../composables/useAlert.js'
+import { useAlert } from '../composables/useAlert'
 
 const { state, confirm, cancel } = useAlert()
 </script>
@@ -18,8 +18,17 @@ const { state, confirm, cancel } = useAlert()
     <div class="relative flex w-[90%] max-w-[460px] flex-col items-center overflow-hidden rounded-[20px] border border-[var(--border-color)] bg-bg-surface p-9 shadow-[0_20px_48px_rgba(0,0,0,0.7),var(--shadow-glow)] before:absolute before:top-0 before:right-0 before:left-0 before:h-0.5 before:bg-gradient-to-r before:from-transparent before:via-green before:to-transparent">
       <!-- Header / Icon & Title -->
       <div class="flex w-full items-center justify-center gap-4">
+        <!-- Error Icon -->
+        <div v-if="state.type === 'error'" class="flex size-11 shrink-0 items-center justify-center rounded-full border border-red-500/30 bg-bg-elevated text-red-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+
         <!-- Warning Icon -->
-        <div v-if="state.type === 'warning'" class="flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated text-green">
+        <div v-else-if="state.type === 'warning'" class="flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated text-green">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
             <line x1="12" y1="9" x2="12" y2="13" />
@@ -28,7 +37,7 @@ const { state, confirm, cancel } = useAlert()
         </div>
 
         <!-- Info Icon -->
-        <div v-if="state.type === 'info'" class="flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated text-green">
+        <div v-else-if="state.type === 'info'" class="flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated text-green">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="16" x2="12" y2="12" />
@@ -37,7 +46,7 @@ const { state, confirm, cancel } = useAlert()
         </div>
 
         <!-- Success Icon -->
-        <div v-if="state.type === 'success'" class="flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated text-green">
+        <div v-else-if="state.type === 'success'" class="flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--zoro-green-border)] bg-bg-elevated text-green">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
@@ -67,7 +76,7 @@ const { state, confirm, cancel } = useAlert()
       <!-- Actions -->
       <div class="flex w-full justify-center gap-3">
         <button
-          v-if="state.isConfirm || state.type === 'warning'"
+          v-if="state.isConfirm"
           class="flex-1 cursor-pointer rounded-[10px] border border-[var(--border-color)] bg-bg-elevated px-6 py-3 font-body text-[15px] font-bold text-text-secondary transition-all duration-200 hover:border-state-dropped hover:text-state-dropped"
           @click="cancel"
         >
