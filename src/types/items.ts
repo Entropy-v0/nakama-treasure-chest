@@ -12,6 +12,27 @@ export type ItemEstado =
   | 'Abandonado'
   | 'En Pausa';
 
+export type DiaSemana =
+  | 'lunes'
+  | 'martes'
+  | 'miercoles'
+  | 'miércoles'
+  | 'jueves'
+  | 'viernes'
+  | 'sabado'
+  | 'sábado'
+  | 'domingo';
+
+export const DIAS_SEMANA: DiaSemana[] = [
+  'lunes',
+  'martes',
+  'miercoles',
+  'jueves',
+  'viernes',
+  'sabado',
+  'domingo',
+];
+
 import type { ProfileSummary } from './crew';
 
 export type Item = {
@@ -30,8 +51,7 @@ export type Item = {
   estudio?: string | null;
   link?: string | null;
   progreso?: number | null;
-  categoria?: string | null;
-  etiquetas?: string[] | null;
+  dia_semana?: DiaSemana | null;
   created_at?: string;
   updated_at?: string;
   creator_profile?: ProfileSummary | null;
@@ -48,6 +68,7 @@ export type ItemScope = 'todos' | 'compartido' | 'tripulacion' | 'personal';
 export interface ItemFilters {
   tipo?: ItemTipo | 'Todos';
   estado?: ItemEstado | 'Todos';
+  diaSemana?: DiaSemana | 'Todos';
   search?: string;
   scope?: ItemScope;
   crewId?: string | null;

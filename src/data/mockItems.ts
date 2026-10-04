@@ -18,6 +18,7 @@ export const INITIAL_MOCK_ITEMS: Item[] = [
     nota: 'El mejor anime de la historia.',
     anio: 1999,
     estudio: 'Toei Animation',
+    dia_semana: 'domingo',
   },
   {
     id: 2,
@@ -102,5 +103,6 @@ export const INITIAL_MOCK_ITEMS: Item[] = [
     nota: 'Fujimoto es un genio.',
     anio: 2018,
     autor: 'Tatsuki Fujimoto',
+    dia_semana: 'martes',
   },
 ];

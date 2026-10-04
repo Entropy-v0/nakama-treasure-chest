@@ -12,7 +12,8 @@ import { useItems } from '../composables/useItems.js'
 import { useAlert } from '../composables/useAlert.js'
 import { useMediaSearch } from '../composables/useMediaSearch'
 import type { MediaSearchResult } from '../services/api/mediaSearch.service'
-import type { ItemTipo, ItemEstado } from '../types/items'
+import type { ItemTipo, ItemEstado, DiaSemana } from '../types/items'
+import { DIAS_SEMANA } from '../types/items'
 import {
   TIPOS,
   ESTADOS,
@@ -52,8 +53,7 @@ interface FormState {
   anio: number | string
   autor: string
   estudio: string
-  categoria: string | null
-  etiquetas: string[]
+  dia_semana: DiaSemana | null
 }
 
 const form = ref<FormState>({
@@ -69,8 +69,7 @@ const form = ref<FormState>({
   anio:       '',
   autor:      '',
   estudio:    '',
-  categoria:  null,
-  etiquetas:  [],
+  dia_semana: null,
 })
 
 const showMangaFields = computed(() => form.value.tipo === 'Manga')
@@ -143,7 +142,7 @@ const handleSubmit = async () => {
     form.value = {
       titulo: '', tipo: 'Anime', portada: '', link: '', progreso: null, estado: 'Pendiente',
       puntuacion: null, generos: '', nota: '', anio: '', autor: '', estudio: '',
-      categoria: null, etiquetas: [],
+      dia_semana: null,
     }
 
     emit('item-added')
@@ -306,6 +305,25 @@ const handleSubmit = async () => {
           <div class="flex flex-col gap-2">
             <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary">Puntuación</label>
             <ScoreSelector v-model="form.puntuacion" />
+          </div>
+
+          <!-- Día de emisión semanal (Calendario) -->
+          <div v-if="form.tipo !== 'Película'" class="flex flex-col gap-2">
+            <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary">
+              Día de emisión semanal <span class="font-normal text-xs text-text-muted">(para el Calendario)</span>
+            </label>
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                v-for="dia in DIAS_SEMANA"
+                :key="dia"
+                type="button"
+                class="rounded-lg border px-3 py-1.5 text-xs font-semibold capitalize transition-all cursor-pointer"
+                :class="form.dia_semana === dia ? 'border-green bg-green/10 text-green font-bold shadow-sm' : 'border-white/5 bg-bg-card text-text-muted hover:text-white'"
+                @click="form.dia_semana = form.dia_semana === dia ? null : dia"
+              >
+                {{ dia }}
+              </button>
+            </div>
           </div>
 
           <!-- Progreso / Capítulo o Episodio (no aplica a Película) -->

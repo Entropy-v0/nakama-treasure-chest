@@ -19,7 +19,8 @@ import {
 import { useItems } from '../composables/useItems'
 import { useAlert } from '../composables/useAlert'
 import { useClipboard } from '../composables/useClipboard'
-import type { Item, ItemEstado } from '../types/items'
+import type { Item, ItemEstado, DiaSemana } from '../types/items'
+import { DIAS_SEMANA } from '../types/items'
 import {
   TYPE_META,
   STATUS_META,
@@ -54,6 +55,7 @@ interface EditFormState {
   autor: string
   estudio: string
   portada: string
+  dia_semana: DiaSemana | null
 }
 
 const isEditing = ref(false)
@@ -68,6 +70,7 @@ const editForm = ref<EditFormState>({
   autor: '',
   estudio: '',
   portada: '',
+  dia_semana: null,
 })
 
 const typeMeta = computed(() => TYPE_META[props.item.tipo] || { color: 'var(--text-muted)', label: props.item.tipo })
@@ -91,6 +94,7 @@ const startEditing = () => {
     autor: props.item.autor || '',
     estudio: props.item.estudio || '',
     portada: props.item.portada || '',
+    dia_semana: props.item.dia_semana || null,
   }
   isEditing.value = true
 }
@@ -141,6 +145,7 @@ const handleSave = async () => {
     autor: editForm.value.autor || null,
     estudio: editForm.value.estudio || null,
     portada: editForm.value.portada || null,
+    dia_semana: editForm.value.dia_semana || null,
   }
 
   try {
@@ -384,9 +389,9 @@ const handleDelete = async () => {
                 <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Estudio</span>
                 <span class="text-sm font-medium text-text-primary">{{ item.estudio }}</span>
               </div>
-              <div v-if="item.categoria" class="flex flex-col gap-0.5">
-                <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Categoría</span>
-                <span class="text-sm font-medium text-text-primary">{{ item.categoria }}</span>
+              <div v-if="item.dia_semana" class="flex flex-col gap-0.5">
+                <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Emisión</span>
+                <span class="text-sm font-medium capitalize text-text-primary">{{ item.dia_semana }}</span>
               </div>
             </div>
 
@@ -481,6 +486,23 @@ const handleDelete = async () => {
               <div class="flex flex-col gap-1.5">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Puntuación (1-10)</label>
                 <ScoreSelector v-model="editForm.puntuacion" />
+              </div>
+
+              <!-- Día de emisión semanal (Calendario) -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Día de emisión semanal</label>
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    v-for="dia in DIAS_SEMANA"
+                    :key="dia"
+                    type="button"
+                    class="rounded-lg border px-2.5 py-1 text-xs font-semibold capitalize transition-all cursor-pointer"
+                    :class="editForm.dia_semana === dia ? 'border-green bg-green/10 text-green font-bold shadow-sm' : 'border-white/5 bg-bg-card text-text-muted hover:text-white'"
+                    @click="editForm.dia_semana = editForm.dia_semana === dia ? null : dia"
+                  >
+                    {{ dia }}
+                  </button>
+                </div>
               </div>
 
               <!-- Enlace web / Link -->

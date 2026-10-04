@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref, watch } from 'vue';
-import type { Item, ItemInsert, ItemUpdate, ItemFilters } from '../types/items';
+import { ref, computed, watch } from 'vue';
+import type { Item, ItemInsert, ItemUpdate, ItemFilters, DiaSemana } from '../types/items';
 import { itemsService } from '../services/supabase/items.service';
 import { isSupabaseConfigured } from '../services/supabase/client';
 import { INITIAL_MOCK_ITEMS } from '../data/mockItems';
@@ -24,6 +24,7 @@ export const useItemsStore = defineStore('items', () => {
     const hasSpecificFilters = Boolean(
       (filters.tipo && filters.tipo !== 'Todos') ||
       (filters.estado && filters.estado !== 'Todos') ||
+      (filters.diaSemana && filters.diaSemana !== 'Todos') ||
       filters.search ||
       filters.scope ||
       filters.crewId ||
@@ -126,6 +127,33 @@ export const useItemsStore = defineStore('items', () => {
     error.value = null;
   };
 
+  /**
+   * Elementos agrupados reactivamente por día de la semana.
+   */
+  const itemsByDay = computed(() => {
+    const grouped: Record<DiaSemana, Item[]> = {
+      lunes: [],
+      martes: [],
+      miercoles: [],
+      miércoles: [],
+      jueves: [],
+      viernes: [],
+      sabado: [],
+      sábado: [],
+      domingo: [],
+    };
+    for (const item of items.value) {
+      if (item.dia_semana && grouped[item.dia_semana]) {
+        grouped[item.dia_semana].push(item);
+      }
+    }
+    return grouped;
+  });
+
+  const getItemsForDay = (dia: DiaSemana): Item[] => {
+    return items.value.filter(i => i.dia_semana === dia);
+  };
+
   // Limpiar estado automáticamente si el usuario cierra sesión o cambia de cuenta
   watch(
     () => authStore.user?.id,
@@ -142,6 +170,8 @@ export const useItemsStore = defineStore('items', () => {
     isLoading,
     isLoaded,
     error,
+    itemsByDay,
+    getItemsForDay,
     loadItems,
     fetchItems: loadItems,
     addItem,
