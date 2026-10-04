@@ -1,8 +1,32 @@
 import { reactive } from 'vue';
 
-const state = reactive({
+export type AlertType = 'info' | 'warning' | 'success' | 'error';
+
+export interface AlertOptions {
+  type?: AlertType;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+}
+
+export interface ConfirmOptions extends AlertOptions {
+  cancelText?: string;
+}
+
+export interface AlertState {
+  isOpen: boolean;
+  type: AlertType;
+  title: string;
+  message: string;
+  confirmText: string;
+  cancelText: string;
+  isConfirm: boolean;
+  resolvePromise: ((value: boolean) => void) | null;
+}
+
+const state = reactive<AlertState>({
   isOpen: false,
-  type: 'info', // 'warning', 'info', 'success'
+  type: 'info',
   title: '',
   message: '',
   confirmText: 'Aceptar',
@@ -17,7 +41,7 @@ export function useAlert() {
     title = '',
     message = '',
     confirmText = 'Aceptar',
-  } = {}) => {
+  }: AlertOptions = {}): Promise<boolean> => {
     state.type = type;
     state.title = title;
     state.message = message;
@@ -25,7 +49,7 @@ export function useAlert() {
     state.isConfirm = false;
     state.isOpen = true;
 
-    return new Promise((resolve) => {
+    return new Promise<boolean>((resolve) => {
       state.resolvePromise = resolve;
     });
   };
@@ -36,7 +60,7 @@ export function useAlert() {
     message = '',
     confirmText = 'Aceptar',
     cancelText = 'Cancelar',
-  } = {}) => {
+  }: ConfirmOptions = {}): Promise<boolean> => {
     state.type = type;
     state.title = title;
     state.message = message;
@@ -45,7 +69,7 @@ export function useAlert() {
     state.isConfirm = true;
     state.isOpen = true;
 
-    return new Promise((resolve) => {
+    return new Promise<boolean>((resolve) => {
       state.resolvePromise = resolve;
     });
   };
@@ -71,6 +95,6 @@ export function useAlert() {
     showAlert,
     showConfirm,
     confirm,
-    cancel
+    cancel,
   };
 }

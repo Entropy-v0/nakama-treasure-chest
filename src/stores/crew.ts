@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { crewService } from '../services/supabase/crew.service';
 import type { Crew, CrewMember, CrewInvite } from '../types/crew';
 import { useAuthStore } from './auth';
@@ -13,6 +13,25 @@ export const useCrewStore = defineStore('crew', () => {
   const error = ref<string | null>(null);
 
   const authStore = useAuthStore();
+
+  const reset = () => {
+    crew.value = null;
+    members.value = [];
+    pendingInvites.value = [];
+    sentInvites.value = [];
+    isLoading.value = false;
+    error.value = null;
+  };
+
+  // Limpiar inmediatamente si el usuario cierra sesión o cambia de cuenta
+  watch(
+    () => authStore.user?.id,
+    (newId, oldId) => {
+      if (newId !== oldId) {
+        reset();
+      }
+    }
+  );
 
   const hasCrew = computed<boolean>(() => Boolean(crew.value));
   const memberCount = computed<number>(() => members.value.length);
@@ -240,5 +259,6 @@ export const useCrewStore = defineStore('crew', () => {
     declineInvite,
     leaveCrew,
     deleteCrew,
+    reset,
   };
 });

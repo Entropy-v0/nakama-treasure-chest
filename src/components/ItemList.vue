@@ -26,7 +26,11 @@ import { Layers, Users, User, Ship } from '@lucide/vue'
 
 const { items, isLoading, isLoaded, loadItems } = useItems()
 const { crew, hasCrew, loadCrewData } = useCrew()
-const selectedItem = ref(null)
+const selectedItemId = ref(null)
+const selectedItem = computed(() => {
+  if (selectedItemId.value === null) return null
+  return items.value.find(i => i.id === selectedItemId.value) || null
+})
 
 onMounted(async () => {
   loadCrewData()
@@ -166,7 +170,7 @@ const clearFilters = () => {
         :item="item"
         :type-meta="TYPE_META[item.tipo] || {}"
         :status-color="STATUS_COLORS[item.estado] || 'var(--zoro-green)'"
-        @select="selectedItem = item"
+        @select="selectedItemId = item.id"
       />
     </div>
 
@@ -207,7 +211,7 @@ const clearFilters = () => {
     <ItemDetailsModal
       v-if="selectedItem"
       :item="selectedItem"
-      @close="selectedItem = null"
+      @close="selectedItemId = null"
     />
   </div>
 </template>

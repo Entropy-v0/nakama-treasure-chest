@@ -16,14 +16,14 @@ import {
   Globe,
   Bookmark,
 } from '@lucide/vue'
-import { useItems } from '../composables/useItems.js'
-import { useAlert } from '../composables/useAlert.js'
+import { useItems } from '../composables/useItems'
+import { useAlert } from '../composables/useAlert'
 import {
   TYPE_META,
   STATUS_META,
   STATUS_COLORS,
   ESTADOS,
-} from '../composables/useTypeMeta.js'
+} from '../composables/useTypeMeta'
 import StatusSelector from './items/StatusSelector.vue'
 import ScoreSelector from './items/ScoreSelector.vue'
 
@@ -33,7 +33,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const { updateItem, deleteItem } = useItems()
-const { showAlert } = useAlert()
+const { showAlert, showConfirm } = useAlert()
 
 const copied = ref(false)
 const copyLink = async (url) => {
@@ -97,7 +97,6 @@ const incrementProgress = async () => {
   const next = current + 1
   try {
     await updateItem(props.item.id, { progreso: next })
-    props.item.progreso = next
   } catch (err) {
     console.error('Error al incrementar progreso:', err)
   }
@@ -109,7 +108,6 @@ const decrementProgress = async () => {
   const next = current - 1
   try {
     await updateItem(props.item.id, { progreso: next })
-    props.item.progreso = next
   } catch (err) {
     console.error('Error al disminuir progreso:', err)
   }
@@ -134,16 +132,15 @@ const handleSave = async () => {
 
   try {
     await updateItem(props.item.id, updates)
-    Object.assign(props.item, updates)
     isEditing.value = false
     await showAlert({
       type: 'success',
       title: '¡Actualizado!',
-      message: `La información de "${props.item.titulo}" fue actualizada.`,
+      message: `La información de "${editForm.value.titulo}" fue actualizada.`,
     })
   } catch (err) {
     await showAlert({
-      type: 'warning',
+      type: 'error',
       title: 'Error',
       message: 'No se pudo guardar la información.',
     })
@@ -151,10 +148,12 @@ const handleSave = async () => {
 }
 
 const handleDelete = async () => {
-  const confirmed = await showAlert({
+  const confirmed = await showConfirm({
     type: 'warning',
-    title: 'Eliminar',
-    message: `¿Eliminar "${props.item.titulo}" de tu colección?`,
+    title: 'Eliminar de la colección',
+    message: `¿Deseas eliminar "${props.item.titulo}" permanentemente?`,
+    confirmText: 'Eliminar',
+    cancelText: 'Cancelar',
   })
   if (confirmed) {
     await deleteItem(props.item.id)
