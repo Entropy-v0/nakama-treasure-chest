@@ -10,8 +10,8 @@ import { useAuthStore } from '../stores/auth'
 import { useAlert } from '../composables/useAlert'
 import { Anchor, Swords } from '@lucide/vue'
 import fondoRegistro from '../assets/fondo_registro.png'
-import AuthLayout from './auth/AuthLayout.vue'
-import AuthBrand from './auth/AuthBrand.vue'
+import AuthLayout from '../components/auth/AuthLayout.vue'
+import AuthBrand from '../components/auth/AuthBrand.vue'
 
 const username = ref('')
 const email = ref('')

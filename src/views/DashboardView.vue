@@ -14,10 +14,11 @@ import { useCrew } from '../composables/useCrew'
 import { useItems } from '../composables/useItems.js'
 import { TYPE_META, STATUS_META } from '../composables/useTypeMeta.js'
 
-import StatCard from './dashboard/StatCard.vue'
-import StatusPillBar from './dashboard/StatusPillBar.vue'
-import RecentItemCard from './dashboard/RecentItemCard.vue'
-import EmptyState from './ui/EmptyState.vue'
+import PageContainer from '../components/layout/PageContainer.vue'
+import StatCard from '../components/dashboard/StatCard.vue'
+import StatusPillBar from '../components/dashboard/StatusPillBar.vue'
+import RecentItemCard from '../components/dashboard/RecentItemCard.vue'
+import EmptyState from '../components/ui/EmptyState.vue'
 
 const emit = defineEmits(['change-view'])
 const router = useRouter()
@@ -109,10 +110,9 @@ const pickRandomItem = () => {
 </script>
 
 <template>
-  <div class="box-border min-h-screen max-w-[1100px] px-10 py-8 max-md:px-4 max-md:py-6">
-
+  <PageContainer max-width="max-w-[1100px]">
     <!-- ── Welcome Header ── -->
-    <header class="mb-8 flex items-start justify-between border-b border-white/5 pb-6 max-md:flex-col max-md:items-stretch max-md:gap-4">
+    <template #header>
       <div>
         <h1 class="mb-1.5 flex items-center gap-2.5 text-[2rem] font-bold text-white max-md:text-2xl">
           {{ authStore.welcomeGreeting }}
@@ -150,7 +150,7 @@ const pickRandomItem = () => {
           Agregar contenido
         </button>
       </div>
-    </header>
+    </template>
 
     <!-- ── Selector de Ámbito de Tripulación (Modo Pareja) ── -->
     <div
@@ -344,5 +344,5 @@ const pickRandomItem = () => {
         </div>
       </div>
     </div>
-  </div>
+  </PageContainer>
 </template>

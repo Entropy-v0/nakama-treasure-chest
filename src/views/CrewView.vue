@@ -26,9 +26,10 @@ import {
   User,
   Trash2
 } from '@lucide/vue'
-import { useCrew } from '../../composables/useCrew'
-import { useAuthStore } from '../../stores/auth'
-import { useAlert } from '../../composables/useAlert'
+import { useCrew } from '../composables/useCrew'
+import { useAuthStore } from '../stores/auth'
+import { useAlert } from '../composables/useAlert'
+import PageContainer from '../components/layout/PageContainer.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -315,42 +316,34 @@ const formatDate = (isoString) => {
 </script>
 
 <template>
-  <div class="box-border min-h-screen px-10 py-8 max-md:px-4 max-md:py-6">
+  <PageContainer
+    title="Tripulación"
+    subtitle="Gestión del equipo, nakamas a bordo e invitaciones"
+  >
+    <template #header-actions v-if="hasCrew">
+      <button
+        v-if="isCaptain"
+        type="button"
+        :disabled="isActionLoading"
+        class="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 font-body text-xs font-semibold text-red-400 transition-all duration-200 hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/20 cursor-pointer disabled:opacity-50"
+        title="Disolver y eliminar la tripulación permanentemente"
+        @click="handleDeleteCrew"
+      >
+        <Trash2 :size="14" />
+        <span>Eliminar tripulación</span>
+      </button>
 
-    <!-- Header Principal (Mismo diseño que Dashboard y Colección) -->
-    <header class="mb-8 flex items-center justify-between border-b border-white/5 pb-5 max-md:flex-col max-md:items-start max-md:gap-4">
-      <div>
-        <h1 class="text-[2rem] font-bold text-white">Tripulación</h1>
-        <p class="mt-1 text-sm text-text-muted">
-          Gestión del equipo, nakamas a bordo e invitaciones
-        </p>
-      </div>
-
-      <div v-if="hasCrew" class="flex items-center gap-3">
-        <button
-          v-if="isCaptain"
-          type="button"
-          :disabled="isActionLoading"
-          class="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 font-body text-xs font-semibold text-red-400 transition-all duration-200 hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/20 cursor-pointer disabled:opacity-50"
-          title="Disolver y eliminar la tripulación permanentemente"
-          @click="handleDeleteCrew"
-        >
-          <Trash2 :size="14" />
-          <span>Eliminar tripulación</span>
-        </button>
-
-        <button
-          type="button"
-          :disabled="isActionLoading"
-          class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-body text-xs font-semibold text-text-muted transition-all duration-200 hover:text-state-dropped hover:border-red-500/30 hover:bg-red-500/10 cursor-pointer disabled:opacity-50"
-          title="Abandonar esta tripulación"
-          @click="handleLeaveCrew"
-        >
-          <LogOut :size="14" />
-          <span>Abandonar tripulación</span>
-        </button>
-      </div>
-    </header>
+      <button
+        type="button"
+        :disabled="isActionLoading"
+        class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-body text-xs font-semibold text-text-muted transition-all duration-200 hover:text-state-dropped hover:border-red-500/30 hover:bg-red-500/10 cursor-pointer disabled:opacity-50"
+        title="Abandonar esta tripulación"
+        @click="handleLeaveCrew"
+      >
+        <LogOut :size="14" />
+        <span>Abandonar tripulación</span>
+      </button>
+    </template>
 
     <!-- ── CASO 1: NO TIENE TRIPULACIÓN ACTIVA ── -->
     <div v-if="!hasCrew" class="flex flex-col gap-10">
@@ -725,5 +718,5 @@ const formatDate = (isoString) => {
 
     </div>
 
-  </div>
+  </PageContainer>
 </template>

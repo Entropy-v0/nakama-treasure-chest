@@ -15,12 +15,13 @@ import {
   TIPOS_FILTER,
   ESTADOS_FILTER,
 } from '../composables/useTypeMeta.js'
-import ItemDetailsModal from './ItemDetailsModal.vue'
+import PageContainer from '../components/layout/PageContainer.vue'
+import ItemDetailsModal from '../components/ItemDetailsModal.vue'
 
-import SearchBar from './collection/SearchBar.vue'
-import FilterTabs from './collection/FilterTabs.vue'
-import StatusFilter from './collection/StatusFilter.vue'
-import ItemCard from './collection/ItemCard.vue'
+import SearchBar from '../components/collection/SearchBar.vue'
+import FilterTabs from '../components/collection/FilterTabs.vue'
+import StatusFilter from '../components/collection/StatusFilter.vue'
+import ItemCard from '../components/collection/ItemCard.vue'
 import { useCrew } from '../composables/useCrew'
 import { Layers, Users, User, Ship } from '@lucide/vue'
 
@@ -92,47 +93,43 @@ const clearFilters = () => {
 </script>
 
 <template>
-  <div class="box-border min-h-screen px-10 py-8 max-md:px-4 max-md:py-6">
-
-    <!-- Header -->
-    <header class="mb-6 flex items-center justify-between border-b border-white/5 pb-5 max-md:flex-col max-md:items-start max-md:gap-4">
-      <div class="flex items-center gap-4 flex-wrap">
-        <h1 class="text-[2rem] font-bold text-white">Colección</h1>
-
-        <!-- Selector de Ámbito (Personal vs Tripulación Compartida) -->
-        <div v-if="hasCrew" class="flex items-center gap-1 bg-bg-surface border border-white/5 p-1 rounded-xl">
-          <button
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-            :class="activeScope === 'todos' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-            @click="activeScope = 'todos'"
-          >
-            <Layers :size="13" />
-            <span>Todos</span>
-          </button>
-          <button
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-            :class="activeScope === 'compartido' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-            @click="activeScope = 'compartido'"
-          >
-            <Users :size="13" />
-            <span>Compartidos</span>
-          </button>
-          <button
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-            :class="activeScope === 'personal' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-            @click="activeScope = 'personal'"
-          >
-            <User :size="13" />
-            <span>Solo mío</span>
-          </button>
-        </div>
+  <PageContainer title="Colección">
+    <template #title-suffix>
+      <!-- Selector de Ámbito (Personal vs Tripulación Compartida) -->
+      <div v-if="hasCrew" class="flex items-center gap-1 bg-bg-surface border border-white/5 p-1 rounded-xl">
+        <button
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+          :class="activeScope === 'todos' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
+          @click="activeScope = 'todos'"
+        >
+          <Layers :size="13" />
+          <span>Todos</span>
+        </button>
+        <button
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+          :class="activeScope === 'compartido' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
+          @click="activeScope = 'compartido'"
+        >
+          <Users :size="13" />
+          <span>Compartidos</span>
+        </button>
+        <button
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+          :class="activeScope === 'personal' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
+          @click="activeScope = 'personal'"
+        >
+          <User :size="13" />
+          <span>Solo mío</span>
+        </button>
       </div>
+    </template>
 
+    <template #header-actions>
       <SearchBar v-model="searchQuery" />
-    </header>
+    </template>
 
     <!-- Tabs por tipo -->
     <div class="mb-3">
@@ -213,5 +210,5 @@ const clearFilters = () => {
       :item="selectedItem"
       @close="selectedItemId = null"
     />
-  </div>
+  </PageContainer>
 </template>

@@ -8,8 +8,8 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import fondoLogin from '../assets/fondo_login.jpg'
-import AuthLayout from './auth/AuthLayout.vue'
-import AuthBrand from './auth/AuthBrand.vue'
+import AuthLayout from '../components/auth/AuthLayout.vue'
+import AuthBrand from '../components/auth/AuthBrand.vue'
 
 const email = ref('')
 const password = ref('')

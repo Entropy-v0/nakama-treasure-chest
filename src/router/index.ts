@@ -9,31 +9,31 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../components/Login.vue'),
+    component: () => import('../views/LoginView.vue'),
     meta: { guestOnly: true, title: 'Nakama' },
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../components/Register.vue'),
+    component: () => import('../views/RegisterView.vue'),
     meta: { guestOnly: true, title: 'Nakama' },
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('../components/Dashboard.vue'),
+    component: () => import('../views/DashboardView.vue'),
     meta: { requiresAuth: true, title: 'Nakama' },
   },
   {
     path: '/collection',
     name: 'Collection',
-    component: () => import('../components/ItemList.vue'),
+    component: () => import('../views/ItemListView.vue'),
     meta: { requiresAuth: true, title: 'Nakama' },
   },
   {
     path: '/calendar',
     name: 'Calendar',
-    component: () => import('../components/Calendar.vue'),
+    component: () => import('../views/CalendarView.vue'),
     meta: { requiresAuth: true, title: 'Nakama - Calendario' },
   },
   {
@@ -44,13 +44,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/crew',
     name: 'Crew',
-    component: () => import('../components/crew/CrewView.vue'),
+    component: () => import('../views/CrewView.vue'),
     meta: { requiresAuth: true, title: 'Nakama' },
   },
   {
     path: '/add',
     name: 'AddItem',
-    component: () => import('../components/AddItem.vue'),
+    component: () => import('../views/AddItemView.vue'),
     meta: { requiresAuth: true, title: 'Nakama' },
   },
   {

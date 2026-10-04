@@ -17,10 +17,11 @@ import {
   TYPE_META,
 } from '../composables/useTypeMeta.js'
 
-import TypeSelector from './items/TypeSelector.vue'
-import StatusSelector from './items/StatusSelector.vue'
-import ScoreSelector from './items/ScoreSelector.vue'
-import CoverPreview from './items/CoverPreview.vue'
+import PageContainer from '../components/layout/PageContainer.vue'
+import TypeSelector from '../components/items/TypeSelector.vue'
+import StatusSelector from '../components/items/StatusSelector.vue'
+import ScoreSelector from '../components/items/ScoreSelector.vue'
+import CoverPreview from '../components/items/CoverPreview.vue'
 import { mediaSearchService } from '../services/api/mediaSearch.service'
 import { useCrew } from '../composables/useCrew'
 import { Sparkles, Users, User, Loader2 } from '@lucide/vue'
@@ -157,11 +158,10 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="box-border min-h-screen max-w-[1000px] px-10 py-8 max-md:px-4 max-md:py-6">
-    <header class="mb-8 border-b border-white/5 pb-5">
-      <h1 class="font-heading text-[2rem] font-bold text-text-primary">Agregar contenido</h1>
-    </header>
-
+  <PageContainer
+    title="Agregar contenido"
+    max-width="max-w-[1000px]"
+  >
     <form class="w-full" @submit.prevent="handleSubmit">
       <div class="grid grid-cols-2 gap-12 max-md:grid-cols-1 max-md:gap-8">
 
@@ -434,5 +434,5 @@ const handleSubmit = async () => {
         </div>
       </div>
     </form>
-  </div>
+  </PageContainer>
 </template>
