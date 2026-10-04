@@ -140,10 +140,15 @@ export const authService = {
   async signInWithOAuth(provider: 'discord' | 'google' = 'discord'): Promise<void> {
     if (!isSupabaseConfigured) {
       // Mock OAuth para desarrollo local sin Supabase
+      const isGoogle = provider === 'google'
       const mockUser = getMockUser({
         app_metadata: { provider },
-        user_metadata: { username: 'Capitán Discord', avatar_url: null, genero: 'masculino' },
-        email: 'nakama@discord.gg',
+        user_metadata: {
+          username: isGoogle ? 'Tripulante Google' : 'Capitán Discord',
+          avatar_url: isGoogle ? 'https://lh3.googleusercontent.com/a/default-user=s96-c' : null,
+          genero: 'masculino',
+        },
+        email: isGoogle ? 'nakama.user@gmail.com' : 'nakama@discord.gg',
       })
       setStoredMockUser(mockUser)
       notifyMockListeners('SIGNED_IN', mockUser)
@@ -154,6 +159,10 @@ export const authService = {
       provider,
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
+        queryParams: provider === 'google' ? {
+          access_type: 'offline',
+          prompt: 'consent',
+        } : undefined,
       },
     })
 

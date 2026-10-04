@@ -38,6 +38,7 @@ const { copied, copy } = useClipboard()
         :src="item.portada"
         :alt="item.titulo"
         loading="lazy"
+        decoding="async"
         class="h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-105"
       />
       <div v-else class="flex h-full w-full items-center justify-center bg-bg-elevated">
