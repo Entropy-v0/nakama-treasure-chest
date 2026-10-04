@@ -109,7 +109,7 @@ const handleDeleteAccount = async () => {
 
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-6 backdrop-blur-md max-md:p-4"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-6 backdrop-blur-md max-md:p-4"
     @click.self="$emit('close')"
   >
     <div class="relative w-full max-w-[480px] overflow-hidden rounded-[20px] border border-[var(--border-color)] bg-bg-surface p-7 shadow-[0_20px_48px_rgba(0,0,0,0.7),var(--shadow-glow)] max-md:p-5">
