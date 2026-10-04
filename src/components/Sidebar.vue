@@ -124,7 +124,7 @@ const handleLogout = async () => {
     <nav class="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pt-3 max-md:w-full max-md:flex-row max-md:items-center max-md:justify-around max-md:overflow-visible max-md:p-0">
 
       <!-- Dashboard -->
-      <div class="mb-2 max-md:m-0">
+      <div class="mb-2 max-md:m-0 max-md:order-1">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
@@ -142,7 +142,7 @@ const handleLogout = async () => {
       </div>
 
       <!-- Listado -->
-      <div class="mb-2 max-md:m-0">
+      <div class="mb-2 max-md:m-0 max-md:order-2">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
@@ -161,7 +161,7 @@ const handleLogout = async () => {
       </div>
       
       <!-- Calendario -->
-      <div class="mb-2 max-md:m-0">
+      <div class="mb-2 max-md:m-0 max-md:order-4">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
@@ -177,7 +177,7 @@ const handleLogout = async () => {
       </div>
 
       <!-- Crew -->
-      <div class="mb-2 max-md:m-0">
+      <div class="mb-2 max-md:m-0 max-md:order-5">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="flex cursor-pointer select-none items-center justify-between rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex-col max-md:gap-1 max-md:p-2 max-md:text-[10px]"
@@ -199,10 +199,10 @@ const handleLogout = async () => {
         </ul>
       </div>
 
-      <!-- Agregar -->
-      <div class="mb-2 max-md:m-0">
+      <!-- Agregar (Centrado en móvil entre Listado y Calendario) -->
+      <div class="mb-2 max-md:m-0 max-md:order-3">
         <button
-          class="my-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[var(--zoro-green-border)] bg-[var(--zoro-green-glow)] px-4 py-2.5 font-body text-[13.5px] font-semibold text-white transition-all duration-200 hover:border-green-light hover:bg-green-dark hover:text-text-primary hover:shadow-[0_0_24px_rgba(61,122,85,0.1)] max-md:m-0 max-md:size-10 max-md:rounded-full max-md:p-0 max-md:text-[0px]"
+          class="my-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[var(--zoro-green-border)] bg-[var(--zoro-green-glow)] px-4 py-2.5 font-body text-[13.5px] font-semibold text-white transition-all duration-200 hover:border-green-light hover:bg-green-dark hover:text-text-primary hover:shadow-[0_0_24px_rgba(61,122,85,0.1)] max-md:m-0 max-md:size-11 max-md:rounded-full max-md:p-0 max-md:text-[0px] max-md:shadow-[0_0_12px_var(--zoro-green-glow)]"
           title="Agregar contenido"
           @click="navigateTo('/add', 'add')"
         >
@@ -214,7 +214,7 @@ const handleLogout = async () => {
       </div>
 
       <!-- Perfil (Móvil) -->
-      <div class="mb-2 max-md:m-0">
+      <div class="mb-2 max-md:m-0 max-md:order-6">
         <ul class="m-0 flex list-none flex-col gap-0.5 p-0 max-md:flex-row">
           <li
             class="hidden cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2.25 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-elevated hover:text-text-primary max-md:flex max-md:flex-col max-md:gap-1 max-md:p-1.5 max-md:text-[10px]"
