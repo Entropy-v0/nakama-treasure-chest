@@ -22,6 +22,8 @@ import SearchBar from '../components/collection/SearchBar.vue'
 import FilterTabs, { type FilterTabItem } from '../components/collection/FilterTabs.vue'
 import StatusFilter from '../components/collection/StatusFilter.vue'
 import ItemCard from '../components/collection/ItemCard.vue'
+import ScopeFilter from '../components/ui/ScopeFilter.vue'
+import type { ItemScope } from '../types/items'
 import { useCrew } from '../composables/useCrew'
 import { Layers, Users, User, Ship } from '@lucide/vue'
 
@@ -57,7 +59,7 @@ const typeTabs: FilterTabItem[] = TIPOS_FILTER.map(key => {
 /* ── Estado de filtros ── */
 const activeTipo   = ref('Todos')
 const activeEstado = ref('Todos')
-const activeScope  = ref('todos') // 'todos' | 'compartido' | 'personal'
+const activeScope  = ref<ItemScope>('todos')
 const searchQuery  = ref('')
 
 const filteredItems = computed(() => {
@@ -99,36 +101,7 @@ const clearFilters = () => {
   <PageContainer title="Colección"
   subtitle="Explora y gestiona tu contenido" :loading="isLoading">
     <template #title-suffix>
-      <!-- Selector de Ámbito (Personal vs Tripulación Compartida) -->
-      <div v-if="hasCrew" class="flex items-center gap-1 bg-bg-surface border border-white/5 p-1 rounded-xl">
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-          :class="activeScope === 'todos' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="activeScope = 'todos'"
-        >
-          <Layers :size="13" />
-          <span>Todos</span>
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-          :class="activeScope === 'compartido' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="activeScope = 'compartido'"
-        >
-          <Users :size="13" />
-          <span>Compartidos</span>
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-          :class="activeScope === 'personal' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="activeScope = 'personal'"
-        >
-          <User :size="13" />
-          <span>Solo mío</span>
-        </button>
-      </div>
+      <ScopeFilter v-if="hasCrew" v-model="activeScope" />
     </template>
 
     <template #header-actions>

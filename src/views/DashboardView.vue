@@ -20,6 +20,7 @@ import StatCard from '../components/dashboard/StatCard.vue'
 import StatusPillBar from '../components/dashboard/StatusPillBar.vue'
 import RecentItemCard from '../components/dashboard/RecentItemCard.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
+import ScopeFilter from '../components/ui/ScopeFilter.vue'
 
 const emit = defineEmits<{
   'change-view': [viewName?: string]
@@ -167,35 +168,7 @@ const pickRandomItem = () => {
         </span>
       </div>
 
-      <div class="flex items-center gap-1 bg-bg-elevated p-1 rounded-lg">
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-          :class="currentScope === 'todos' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="currentScope = 'todos'"
-        >
-          <Layers :size="13" />
-          <span>Todos</span>
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-          :class="currentScope === 'compartido' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="currentScope = 'compartido'"
-        >
-          <Users :size="13" />
-          <span>Compartidos</span>
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-          :class="currentScope === 'personal' ? 'bg-green text-black font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'"
-          @click="currentScope = 'personal'"
-        >
-          <User :size="13" />
-          <span>Solo mío</span>
-        </button>
-      </div>
+      <ScopeFilter v-model="currentScope" />
     </div>
 
     <!-- ── Stats: tipos ── -->

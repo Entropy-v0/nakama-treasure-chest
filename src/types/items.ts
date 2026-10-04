@@ -43,11 +43,13 @@ export type ItemInsert = Omit<Item, 'id' | 'created_at' | 'updated_at'> & {
 
 export type ItemUpdate = Partial<ItemInsert>;
 
+export type ItemScope = 'todos' | 'compartido' | 'tripulacion' | 'personal';
+
 export interface ItemFilters {
   tipo?: ItemTipo | 'Todos';
   estado?: ItemEstado | 'Todos';
   search?: string;
-  scope?: 'todos' | 'personal' | 'tripulacion';
+  scope?: ItemScope;
   crewId?: string | null;
   page?: number;
   perPage?: number;

@@ -28,7 +28,7 @@ export const itemsService = {
         filtered = filtered.filter(i => i.crew_id === filters.crewId);
       } else if (filters.scope === 'personal') {
         filtered = filtered.filter(i => !i.crew_id);
-      } else if (filters.scope === 'tripulacion') {
+      } else if (filters.scope === 'tripulacion' || filters.scope === 'compartido') {
         filtered = filtered.filter(i => !!i.crew_id);
       }
 
@@ -55,7 +55,7 @@ export const itemsService = {
       query = query.eq('crew_id', filters.crewId);
     } else if (filters.scope === 'personal') {
       query = query.is('crew_id', null);
-    } else if (filters.scope === 'tripulacion') {
+    } else if (filters.scope === 'tripulacion' || filters.scope === 'compartido') {
       query = query.not('crew_id', 'is', null);
     }
 
