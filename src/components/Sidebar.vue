@@ -7,13 +7,15 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { storeToRefs } from 'pinia'
 import katanaLogo from '../assets/katana_logo.png'
 import { Heart, LogOut, Pencil, Ship, Calendar as CalendarIcon } from '@lucide/vue'
 import EditProfileModal from './auth/EditProfileModal.vue'
-import { useCrew } from '../composables/useCrew'
+import { useCrewStore } from '../stores/crew'
 
 const isEditProfileOpen = ref(false)
-const { hasPendingInvites } = useCrew()
+const crewStore = useCrewStore()
+const { hasPendingInvites } = storeToRefs(crewStore)
 
 interface Props {
   currentView?: string

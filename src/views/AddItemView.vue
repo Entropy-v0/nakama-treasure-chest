@@ -4,11 +4,13 @@
  * Orquesta la creación de un nuevo elemento en la colección.
  * Delega la selección visual a componentes Dumb especializados.
  *
- * Datos: siguen siendo Mocks vía useItems (Fase 1: NO conectar Supabase).
+ * Datos: useItemsStore (Pinia) → itemsService (Supabase o mocks locales).
  */
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useItems } from '../composables/useItems.js'
+import { storeToRefs } from 'pinia'
+import { useItemsStore } from '../stores/items'
+import { useCrewStore } from '../stores/crew'
 import { useAlert } from '../composables/useAlert.js'
 import { useMediaSearch } from '../composables/useMediaSearch'
 import type { MediaSearchResult } from '../services/api/mediaSearch.service'
@@ -26,16 +28,16 @@ import TypeSelector from '../components/items/TypeSelector.vue'
 import StatusSelector from '../components/items/StatusSelector.vue'
 import ScoreSelector from '../components/items/ScoreSelector.vue'
 import CoverPreview from '../components/items/CoverPreview.vue'
-import { useCrew } from '../composables/useCrew'
 import { Sparkles, Users, User, Loader2 } from '@lucide/vue'
 
 const emit = defineEmits<{
   'item-added': []
 }>()
 const router = useRouter()
-const { addItem } = useItems()
+const itemsStore = useItemsStore()
+const crewStore = useCrewStore()
 const { showAlert } = useAlert()
-const { crew, hasCrew } = useCrew()
+const { crew, hasCrew } = storeToRefs(crewStore)
 const { results: searchResults, isSearching, showSuggestions, search: triggerMediaSearch } = useMediaSearch(450)
 
 const shareScope = ref<'tripulacion' | 'personal'>(hasCrew.value ? 'tripulacion' : 'personal')
@@ -124,7 +126,7 @@ const handleSubmit = async () => {
     : { crew_id: null }
 
   try {
-    await addItem({
+    await itemsStore.addItem({
       ...form.value,
       ...crewPayload,
       link: form.value.link?.trim() || null,

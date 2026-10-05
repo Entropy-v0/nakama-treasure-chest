@@ -26,14 +26,17 @@ import {
   User,
   Trash2
 } from '@lucide/vue'
-import { useCrew } from '../composables/useCrew'
+import { storeToRefs } from 'pinia'
+import { useCrewStore } from '../stores/crew'
 import { useAuthStore } from '../stores/auth'
 import { useAlert } from '../composables/useAlert'
 import PageContainer from '../components/layout/PageContainer.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const crewStore = useCrewStore()
 const { showAlert, showConfirm } = useAlert()
+
 const { 
   crew, 
   members, 
@@ -42,6 +45,9 @@ const {
   hasCrew, 
   isCaptain,
   memberCount,
+} = storeToRefs(crewStore)
+
+const {
   loadCrewData, 
   createCrew, 
   updateCrewName,
@@ -50,8 +56,8 @@ const {
   acceptInvite, 
   declineInvite, 
   leaveCrew,
-  deleteCrew
-} = useCrew()
+  deleteCrew,
+} = crewStore
 
 // Estado local
 const newCrewName = ref('')
@@ -428,7 +434,7 @@ const formatDate = (isoString?: string | null) => {
           <form class="flex flex-col gap-4" @submit.prevent="handleCreateCrew">
             <div class="flex flex-col gap-1.5">
               <label for="crew-name" class="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-                Nombre del barco / tripulación
+                Nombre de la tripulación
               </label>
               <input
                 id="crew-name"
@@ -443,7 +449,7 @@ const formatDate = (isoString?: string | null) => {
             <button
               type="submit"
               :disabled="isActionLoading || !newCrewName.trim()"
-              class="flex items-center justify-center gap-2 rounded-lg bg-green px-5 py-2.5 text-xs font-bold text-bg-base transition-all hover:bg-green-light cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center justify-center gap-2 rounded-lg bg-green text-white px-5 py-2.5 text-xs font-bold text-bg-base transition-all hover:bg-green-light cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Ship :size="15" class="text-white" />
               <span>{{ isActionLoading ? 'Fundando...' : 'Fundar Tripulación' }}</span>
@@ -469,7 +475,7 @@ const formatDate = (isoString?: string | null) => {
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-white/40" />
 
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">Barco</span>
+              <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">Tripulación</span>
               <Ship :size="18" class="text-white" />
             </div>
 
