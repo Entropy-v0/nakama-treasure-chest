@@ -2,17 +2,17 @@
 /**
  * Dashboard.vue — Smart Component (refactorizado)
  * Orquesta los sub-componentes del dashboard.
- * Mantiene la lógica de cómputo y delega la presentación a dumb components.
- *
- * Datos: siguen siendo Mocks via useItems (Fase 1: NO conectar Supabase).
+ * Filtrado por ámbito y conteos: motor centralizado useItemFilters.
  */
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { Anchor, Users, User, Layers, Dices, Ship, Check, Play, ExternalLink, X, Sparkles } from '@lucide/vue'
 import { useAuthStore } from '../stores/auth'
-import { useCrew } from '../composables/useCrew'
-import { useItems } from '../composables/useItems'
-import { TYPE_META, STATUS_META } from '../composables/useTypeMeta'
+import { useCrewStore } from '../stores/crew'
+import { useItemsStore } from '../stores/items'
+import { useItemFilters } from '../composables/useItemFilters'
+import { TYPE_META, STATUS_META, TIPOS, ESTADOS_FILTER } from '../composables/useTypeMeta'
 import type { Item } from '../types/items'
 
 import PageContainer from '../components/layout/PageContainer.vue'
@@ -27,19 +27,29 @@ const emit = defineEmits<{
 }>()
 const router = useRouter()
 const authStore = useAuthStore()
-const { crew, hasCrew, loadCrewData } = useCrew()
-const { items, isLoaded, loadItems } = useItems()
+const crewStore = useCrewStore()
+const itemsStore = useItemsStore()
 
-const currentScope = ref<'todos' | 'compartido' | 'personal'>('todos')
+const { crew, hasCrew } = storeToRefs(crewStore)
+const { items, isLoaded } = storeToRefs(itemsStore)
+
+// Motor centralizado: solo usamos el ámbito y los conteos
+const {
+  activeScope: currentScope,
+  filteredItems: displayItems,
+  conteoPorTipo,
+  conteoPorEstado,
+} = useItemFilters(items, { hasCrew })
+
 const isRandomPickerOpen = ref(false)
 const selectedRandomItem = ref<Item | null>(null)
 const isSpinning = ref(false)
 
 onMounted(async () => {
-  loadCrewData()
+  crewStore.loadCrewData()
   if (!isLoaded.value) {
     try {
-      await loadItems()
+      await itemsStore.loadItems()
     } catch (e) {
       console.warn('[Dashboard] Error cargando items:', e)
     }
@@ -51,48 +61,24 @@ const goToView = (path: string, viewName?: string) => {
   router.push(path)
 }
 
-/* ── Elementos filtrados por ámbito ── */
-const displayItems = computed(() => {
-  if (!hasCrew.value || currentScope.value === 'todos') {
-    return items.value
-  }
-  if (currentScope.value === 'compartido') {
-    return items.value.filter(i => !!i.crew_id)
-  }
-  if (currentScope.value === 'personal') {
-    return items.value.filter(i => !i.crew_id)
-  }
-  return items.value
-})
-
-/* ── Computados reactivos al ámbito ── */
-const totalByType = computed(() => ({
-  anime:    displayItems.value.filter(i => i.tipo === 'Anime').length,
-  manga:    displayItems.value.filter(i => i.tipo === 'Manga').length,
-  series:   displayItems.value.filter(i => i.tipo === 'Serie').length,
-  pelicula: displayItems.value.filter(i => i.tipo === 'Película').length,
-}))
-
-const totalByStatus = computed(() => ({
-  'Viendo':     displayItems.value.filter(i => i.estado === 'Viendo').length,
-  'Completado': displayItems.value.filter(i => i.estado === 'Completado').length,
-  'Pendiente':  displayItems.value.filter(i => i.estado === 'Pendiente').length,
-  'Abandonado': displayItems.value.filter(i => i.estado === 'Abandonado').length,
-  'En Pausa':   displayItems.value.filter(i => i.estado === 'En Pausa').length,
-}))
-
 const recent = computed(() =>
   [...displayItems.value].sort((a, b) => b.id - a.id).slice(0, 6)
 )
 
 const totalItems = computed(() => displayItems.value.length)
 
-const typeCards = computed(() => [
-  { key: 'Anime',    count: totalByType.value.anime,    ...TYPE_META['Anime']    },
-  { key: 'Manga',    count: totalByType.value.manga,    ...TYPE_META['Manga']    },
-  { key: 'Serie',    count: totalByType.value.series,   ...TYPE_META['Serie']    },
-  { key: 'Película', count: totalByType.value.pelicula, ...TYPE_META['Película'] },
-])
+const typeCards = computed(() =>
+  TIPOS.map(key => ({
+    key,
+    count: conteoPorTipo.value[key] ?? 0,
+    ...TYPE_META[key as keyof typeof TYPE_META],
+  }))
+)
+
+// Mapa completo (incluye estados con 0) en el orden de ESTADOS_FILTER, sin 'Todos'
+const totalByStatus = computed(() =>
+  Object.fromEntries(ESTADOS_FILTER.slice(1).map(estado => [estado, conteoPorEstado.value[estado] ?? 0]))
+)
 
 /* ── Lógica de Sorteo "¿Qué vemos hoy?" ── */
 const pickRandomItem = () => {

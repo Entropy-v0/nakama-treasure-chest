@@ -1,13 +1,14 @@
 <script setup lang="ts">
 /**
- * ItemList.vue — Smart Component (refactorizado)
- * Orquesta filtros, búsqueda, grid y paginación de la colección.
- * Delega toda la presentación a dumb components.
- *
- * Datos: siguen siendo Mocks via useItems (Fase 1: NO conectar Supabase).
+ * ItemListView.vue — Smart Component
+ * Orquesta la visualización de la colección completa.
+ * Consume el motor centralizado useItemFilters para búsqueda, filtrado y paginación.
  */
 import { ref, computed, onMounted } from 'vue'
-import { useItems } from '../composables/useItems'
+import { storeToRefs } from 'pinia'
+import { useItemsStore } from '../stores/items'
+import { useCrewStore } from '../stores/crew'
+import { useItemFilters } from '../composables/useItemFilters'
 import {
   TYPE_META,
   TYPE_TABS_META,
@@ -15,20 +16,37 @@ import {
   TIPOS_FILTER,
   ESTADOS_FILTER,
 } from '../composables/useTypeMeta'
-import PageContainer from '../components/layout/PageContainer.vue'
-import ItemDetailsModal from '../components/ItemDetailsModal.vue'
 
+import PageContainer from '../components/layout/PageContainer.vue'
 import SearchBar from '../components/collection/SearchBar.vue'
 import FilterTabs, { type FilterTabItem } from '../components/collection/FilterTabs.vue'
 import StatusFilter from '../components/collection/StatusFilter.vue'
 import ItemCard from '../components/collection/ItemCard.vue'
+import EmptyState from '../components/ui/EmptyState.vue'
 import ScopeFilter from '../components/ui/ScopeFilter.vue'
-import type { ItemScope } from '../types/items'
-import { useCrew } from '../composables/useCrew'
-import { Layers, Users, User, Ship } from '@lucide/vue'
+import ItemDetailsModal from '../components/ItemDetailsModal.vue'
 
-const { items, isLoading, isLoaded, loadItems } = useItems()
-const { crew, hasCrew, loadCrewData } = useCrew()
+const itemsStore = useItemsStore()
+const crewStore = useCrewStore()
+
+const { items, isLoading, isLoaded } = storeToRefs(itemsStore)
+const { hasCrew } = storeToRefs(crewStore)
+
+// Motor centralizado de filtrado y paginación
+const {
+  activeTipo,
+  activeEstado,
+  activeScope,
+  searchQuery,
+  currentPage,
+  totalPages,
+  filteredItems,
+  paginatedItems: paginated,
+  setTipo,
+  setEstado,
+  clearFilters,
+} = useItemFilters(items, { hasCrew, itemsPerPage: 18 })
+
 const selectedItemId = ref<number | null>(null)
 const selectedItem = computed(() => {
   if (selectedItemId.value === null) return null
@@ -36,12 +54,12 @@ const selectedItem = computed(() => {
 })
 
 onMounted(async () => {
-  loadCrewData()
+  crewStore.loadCrewData()
   if (!isLoaded.value) {
     try {
-      await loadItems()
+      await itemsStore.loadItems()
     } catch (e) {
-      console.warn('[ItemList] Error cargando items:', e)
+      console.warn('[ItemListView] Error cargando items:', e)
     }
   }
 })
@@ -55,51 +73,14 @@ const typeTabs: FilterTabItem[] = TIPOS_FILTER.map(key => {
     color: meta?.color || 'var(--zoro-green)',
   }
 })
-
-/* ── Estado de filtros ── */
-const activeTipo   = ref('Todos')
-const activeEstado = ref('Todos')
-const activeScope  = ref<ItemScope>('todos')
-const searchQuery  = ref('')
-
-const filteredItems = computed(() => {
-  return items.value.filter(item => {
-    const matchTipo   = activeTipo.value === 'Todos'   || item.tipo === activeTipo.value
-    const matchEstado = activeEstado.value === 'Todos' || item.estado === activeEstado.value
-    const matchSearch = item.titulo.toLowerCase().includes(searchQuery.value.toLowerCase())
-
-    let matchScope = true
-    if (hasCrew.value) {
-      if (activeScope.value === 'compartido') matchScope = Boolean(item.crew_id)
-      else if (activeScope.value === 'personal') matchScope = !item.crew_id
-    }
-
-    return matchTipo && matchEstado && matchSearch && matchScope
-  })
-})
-
-/* ── Paginación ── */
-const itemsPerPage = 18
-const currentPage  = ref(1)
-const totalPages   = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage) || 1)
-const paginated    = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredItems.value.slice(start, start + itemsPerPage)
-})
-
-const setTipo   = (t: string) => { activeTipo.value = t;   currentPage.value = 1 }
-const setEstado = (e: string) => { activeEstado.value = e; currentPage.value = 1 }
-
-const clearFilters = () => {
-  activeTipo.value = 'Todos'
-  activeEstado.value = 'Todos'
-  searchQuery.value = ''
-}
 </script>
 
 <template>
-  <PageContainer title="Colección"
-  subtitle="Explora y gestiona tu contenido" :loading="isLoading">
+  <PageContainer
+    title="Colección"
+    subtitle="Explora y gestiona tu contenido"
+    :loading="isLoading"
+  >
     <template #title-suffix>
       <ScopeFilter v-if="hasCrew" v-model="activeScope" />
     </template>
@@ -127,13 +108,13 @@ const clearFilters = () => {
       />
     </div>
 
-    <!-- Contador -->
+    <!-- Contador de resultados -->
     <p class="mb-5 text-[13px] text-text-muted">
       <span class="font-bold text-green">{{ filteredItems.length }}</span>
       resultado{{ filteredItems.length !== 1 ? 's' : '' }}
     </p>
 
-    <!-- Grid -->
+    <!-- Grid de Items -->
     <div
       v-if="paginated.length > 0"
       class="mb-10 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-x-4 gap-y-5 max-lg:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] max-md:grid-cols-2"
@@ -148,19 +129,13 @@ const clearFilters = () => {
       />
     </div>
 
-    <!-- Empty -->
-    <div v-else class="flex flex-col items-center gap-4 py-20 text-center">
-      <svg class="text-white" xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <p class="text-base text-text-secondary">No hay resultados para los filtros seleccionados.</p>
-      <button
-        class="cursor-pointer rounded-lg border border-[var(--border-color)] bg-bg-card px-6 py-2.5 font-body text-sm text-text-secondary transition-all duration-200 hover:border-[var(--zoro-green-border)] hover:text-green"
-        @click="clearFilters"
-      >
-        Limpiar filtros
-      </button>
-    </div>
+    <!-- Estado Vacío Reutilizable -->
+    <EmptyState
+      v-else
+      message="No hay resultados para los filtros seleccionados."
+      action-label="Limpiar filtros"
+      @action="clearFilters"
+    />
 
     <!-- Paginación -->
     <div v-if="totalPages > 1" class="mt-10 flex items-center justify-center gap-5 border-t border-white/5 pt-6">

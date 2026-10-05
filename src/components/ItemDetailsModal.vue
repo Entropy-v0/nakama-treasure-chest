@@ -16,7 +16,7 @@ import {
   Globe,
   Bookmark,
 } from '@lucide/vue'
-import { useItems } from '../composables/useItems'
+import { useItemsStore } from '../stores/items'
 import { useAlert } from '../composables/useAlert'
 import { useClipboard } from '../composables/useClipboard'
 import type { Item, ItemEstado, DiaSemana } from '../types/items'
@@ -40,7 +40,8 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { updateItem, deleteItem } = useItems()
+const itemsStore = useItemsStore()
+const { updateItem, deleteItem } = itemsStore
 const { showAlert, showConfirm } = useAlert()
 const { copied, copy } = useClipboard()
 

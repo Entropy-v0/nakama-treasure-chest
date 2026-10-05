@@ -1,33 +1,130 @@
 <script setup lang="ts">
 /**
- * CalendarView.vue — Vista de Calendario para seguimiento de emisiones y lanzamientos.
+ * CalendarView.vue — Smart View
+ * Consume directamente useItemsStore, useCrewStore y el motor centralizado useItemFilters.
+ * Cero intermediarios innecesarios.
  */
+import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useItemsStore } from '../stores/items'
+import { useCrewStore } from '../stores/crew'
+import { useItemFilters, getDiaActual } from '../composables/useItemFilters'
+import { TYPE_META, STATUS_COLORS } from '../composables/useTypeMeta'
+import type { Item } from '../types/items'
+
 import PageContainer from '../components/layout/PageContainer.vue'
-import { Calendar as CalendarIcon, Clock, Sparkles } from '@lucide/vue'
+import SearchBar from '../components/collection/SearchBar.vue'
+import ScopeFilter from '../components/ui/ScopeFilter.vue'
+import DayFilter from '../components/calendar/DayFilter.vue'
+import ItemCard from '../components/collection/ItemCard.vue'
+import EmptyState from '../components/ui/EmptyState.vue'
+import ItemDetailsModal from '../components/ItemDetailsModal.vue'
+
+const itemsStore = useItemsStore()
+const crewStore = useCrewStore()
+
+const { items, isLoading, isLoaded } = storeToRefs(itemsStore)
+const { hasCrew } = storeToRefs(crewStore)
+
+const diaDeHoy = getDiaActual()
+const selectedItemId = ref<number | null>(null)
+
+onMounted(async () => {
+  crewStore.loadCrewData()
+  if (!isLoaded.value) {
+    try {
+      await itemsStore.loadItems()
+    } catch (e) {
+      console.warn('[CalendarView] Error cargando items:', e)
+    }
+  }
+})
+
+// Motor centralizado de filtrado con regla de emisiones
+const {
+  filteredItems: broadcastItems,
+  activeDia,
+  activeScope,
+  searchQuery,
+  conteoPorDia,
+  diasList,
+  labels,
+  setDia,
+} = useItemFilters(items, {
+  hasCrew,
+  initialFilters: {
+    estado: 'Viendo',
+    diaSemana: diaDeHoy,
+    soloConDia: true,
+  },
+})
+
+const selectedItem = computed<Item | null>(() => {
+  if (selectedItemId.value === null) return null
+  return items.value.find(i => i.id === selectedItemId.value) || null
+})
+
+const activeDiaLabel = computed(() => labels[activeDia.value] || activeDia.value)
 </script>
 
 <template>
   <PageContainer
-    title="Calendario de Emisiones"
-    subtitle="Lanzamientos y capitulos semanales"
+    title="Calendario Semanal"
+    subtitle="Lanzamientos y episodios que estás siguiendo actualmente"
+    :loading="isLoading"
   >
-
-    <template #header-actions>
-      <div class="flex items-center gap-2 rounded-full border border-green/20 bg-green/5 px-3 py-1 text-xs text-green">
-        <Sparkles :size="14" />
-        <span>En Desarrollo</span>
-      </div>
+    <template #title-suffix>
+      <ScopeFilter v-if="hasCrew" v-model="activeScope" />
     </template>
 
-    <!-- Contenido en construcción -->
-    <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-bg-card/40 p-12 text-center">
-      <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-bg-elevated text-text-muted">
-        <Clock :size="32" class="text-green" />
-      </div>
-      <h3 class="mb-2 text-lg font-bold text-white">Módulo de Calendario</h3>
-      <p class="max-w-md text-sm text-text-muted">
-        Esta sección te permitirá llevar el control de los días de estreno semanal de tus animes, mangas y series favoritos.
-      </p>
+    <template #header-actions>
+      <SearchBar v-model="searchQuery" placeholder="Buscar en emisión..." />
+    </template>
+
+    <!-- Barra de Días (Dumb Component) -->
+    <DayFilter
+      :days="diasList"
+      :active-day="activeDia"
+      :current-day="diaDeHoy"
+      :counts="conteoPorDia"
+      :labels="labels"
+      @select="setDia"
+    />
+
+    <!-- Contador de resultados -->
+    <p class="mb-5 text-[13px] text-text-muted">
+      Mostrando <span class="font-bold text-green">{{ broadcastItems.length }}</span> en emisión
+      <span v-if="activeDia !== 'Todos'"> para el <strong class="text-text-primary">{{ activeDiaLabel }}</strong></span>
+    </p>
+
+    <!-- Grid de Items -->
+    <div
+      v-if="broadcastItems.length > 0"
+      class="mb-10 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-x-4 gap-y-5 max-lg:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] max-md:grid-cols-2"
+    >
+      <ItemCard
+        v-for="item in broadcastItems"
+        :key="item.id"
+        :item="item"
+        :type-meta="TYPE_META[item.tipo] || {}"
+        :status-color="STATUS_COLORS[item.estado] || 'var(--zoro-green)'"
+        @select="selectedItemId = item.id"
+      />
     </div>
+
+    <!-- Estado Vacío Reutilizable (Dumb Component) -->
+    <EmptyState
+      v-else
+      :message="`Sin emisiones para ${activeDiaLabel}. Solo se muestra contenido en estado 'Viendo' con día asignado.`"
+      :action-label="activeDia !== 'Todos' ? 'Ver todos los días' : null"
+      @action="setDia('Todos')"
+    />
+
+    <!-- Modal de Detalles -->
+    <ItemDetailsModal
+      v-if="selectedItem"
+      :item="selectedItem"
+      @close="selectedItemId = null"
+    />
   </PageContainer>
 </template>
