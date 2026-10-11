@@ -3,7 +3,7 @@
  * Mapeo estricto con la tabla 'items' en PostgreSQL / Supabase.
  */
 
-export type ItemTipo = 'Anime' | 'Manga' | 'Serie' | 'Película';
+export type ItemTipo = 'Anime' | 'Manga' | 'Serie' | 'Película' | 'Libro';
 
 export type ItemEstado =
   | 'Pendiente'
@@ -23,15 +23,7 @@ export type DiaSemana =
   | 'sábado'
   | 'domingo';
 
-export const DIAS_SEMANA: DiaSemana[] = [
-  'lunes',
-  'martes',
-  'miercoles',
-  'jueves',
-  'viernes',
-  'sabado',
-  'domingo',
-];
+export { DIAS_SEMANA } from '../constants/itemMeta'
 
 import type { ProfileSummary } from './crew';
 

@@ -106,6 +106,24 @@ export const useItemsStore = defineStore('items', () => {
     }
   };
 
+  /**
+   * Modifica el progreso (capítulo o episodio) de un elemento de forma atómica.
+   * Evita valores negativos y actualiza tanto el backend como el estado reactivo en memoria.
+   */
+  const advanceProgress = async (id: number, delta: number): Promise<Item | undefined> => {
+    const item = items.value.find(i => i.id === id);
+    if (!item) return undefined;
+
+    const currentProgress = typeof item.progreso === 'number' && Number.isFinite(item.progreso) ? item.progreso : 0;
+    const nextProgress = Math.max(0, currentProgress + delta);
+
+    if (nextProgress === currentProgress && delta < 0) {
+      return item;
+    }
+
+    return await updateItem(id, { progreso: nextProgress });
+  };
+
   const reset = () => {
     items.value = isSupabaseConfigured ? [] : [...INITIAL_MOCK_ITEMS];
     isLoaded.value = false;
@@ -131,6 +149,7 @@ export const useItemsStore = defineStore('items', () => {
     loadItems,
     addItem,
     updateItem,
+    advanceProgress,
     deleteItem,
     reset,
   };

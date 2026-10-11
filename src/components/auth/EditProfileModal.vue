@@ -9,6 +9,8 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { useAlert } from '../../composables/useAlert'
 import { X, Check, Camera, User, Anchor, Swords, Trash2 } from '@lucide/vue'
+import BaseButton from '../ui/BaseButton.vue'
+import FormInput from '../ui/FormInput.vue'
 
 const emit = defineEmits<{
   close: []
@@ -158,34 +160,30 @@ const handleDeleteAccount = async () => {
         </div>
 
         <!-- Input URL de Avatar -->
-        <div class="flex flex-col gap-1.5">
-          <label class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted">
-            <Camera :size="13" />
-            URL de imagen de avatar
-          </label>
-          <input
-            v-model="form.avatar_url"
-            type="url"
-            class="rounded-lg border border-[var(--border-color)] bg-bg-input px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted/50 focus:border-green-light focus:outline-none"
-            placeholder="https://ejemplo.com/tu-foto.jpg"
-            @input="handleImageUrlChange"
-          />
-        </div>
+        <FormInput
+          v-model="form.avatar_url"
+          type="url"
+          label="URL de imagen de avatar"
+          placeholder="https://ejemplo.com/tu-foto.jpg"
+          @input="handleImageUrlChange"
+        >
+          <template #leading>
+            <Camera :size="14" />
+          </template>
+        </FormInput>
 
         <!-- Nombre de usuario -->
-        <div class="flex flex-col gap-1.5">
-          <label class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted">
-            <User :size="13" />
-            Nombre de usuario
-          </label>
-          <input
-            v-model="form.username"
-            type="text"
-            required
-            class="rounded-lg border border-[var(--border-color)] bg-bg-input px-3.5 py-2.5 text-sm text-text-primary focus:border-green-light focus:outline-none"
-            placeholder="Tu nombre de usuario"
-          />
-        </div>
+        <FormInput
+          v-model="form.username"
+          type="text"
+          label="Nombre de usuario"
+          placeholder="Tu nombre de usuario"
+          required
+        >
+          <template #leading>
+            <User :size="14" />
+          </template>
+        </FormInput>
 
         <!-- Selector de Género / Título -->
         <div class="flex flex-col gap-1.5">
@@ -224,34 +222,40 @@ const handleDeleteAccount = async () => {
             <h4 class="text-xs font-bold text-red-400">Eliminar cuenta</h4>
             <p class="text-[11px] text-text-muted">Borra permanentemente tu perfil y todos tus datos.</p>
           </div>
-          <button
-            type="button"
+          <BaseButton
+            variant="danger"
+            size="sm"
             :disabled="isSubmitting"
-            class="flex items-center gap-1.5 shrink-0 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-all hover:bg-red-500/20 hover:text-red-300 cursor-pointer disabled:opacity-50"
             @click="handleDeleteAccount"
           >
-            <Trash2 :size="13" />
-            <span>Eliminar</span>
-          </button>
+            <template #icon-left>
+              <Trash2 :size="13" />
+            </template>
+            Eliminar
+          </BaseButton>
         </div>
 
         <!-- Botones de Acción -->
         <div class="mt-2 flex items-center justify-end gap-3 pt-3 border-t border-white/5">
-          <button
-            type="button"
-            class="cursor-pointer rounded-lg border border-[var(--border-color)] bg-bg-elevated px-4 py-2.5 font-body text-xs font-semibold text-text-secondary transition-colors duration-200 hover:text-text-primary"
+          <BaseButton
+            variant="secondary"
+            size="md"
             @click="$emit('close')"
           >
             Cancelar
-          </button>
-          <button
+          </BaseButton>
+          <BaseButton
             type="submit"
-            :disabled="isSubmitting"
-            class="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-green-light bg-green-dark px-5 py-2.5 font-body text-xs font-bold text-white transition-all duration-200 hover:bg-green-light hover:text-bg-base hover:shadow-[0_0_20px_rgba(61,122,85,0.2)] disabled:cursor-not-allowed disabled:opacity-50"
+            variant="primary"
+            size="md"
+            :loading="isSubmitting"
+            loading-text="Guardando..."
           >
-            <Check :size="15" stroke-width="2.5" />
-            <span>{{ isSubmitting ? 'Guardando...' : 'Guardar cambios' }}</span>
-          </button>
+            <template #icon-left>
+              <Check :size="15" stroke-width="2.5" />
+            </template>
+            Guardar cambios
+          </BaseButton>
         </div>
 
       </form>

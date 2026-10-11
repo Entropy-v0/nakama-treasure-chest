@@ -121,7 +121,7 @@ export interface Database {
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
-      item_tipo: 'Anime' | 'Manga' | 'Serie' | 'Película';
+      item_tipo: 'Anime' | 'Manga' | 'Serie' | 'Película' | 'Libro';
       item_estado: 'Pendiente' | 'Viendo' | 'Completado' | 'Abandonado' | 'En Pausa';
       crew_role: CrewRole;
       crew_invite_status: CrewInviteStatus;

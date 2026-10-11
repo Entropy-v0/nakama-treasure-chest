@@ -2,11 +2,15 @@
 /**
  * ItemCard — Dumb Component
  * Tarjeta individual de la colección con portada, overlay hover, enlace directo, copiado y progreso.
+ * Resuelve automáticamente sus colores y metadatos desde itemMeta si no se especifican.
  * Emite click para abrir modal de detalles.
  */
+import { computed } from 'vue'
 import { ExternalLink, Copy, Check, Users } from '@lucide/vue'
 import type { Item } from '../../types/items'
+import { TYPE_META, TYPE_CONFIG, STATUS_COLORS } from '../../constants/itemMeta'
 import { useClipboard } from '../../composables/useClipboard'
+import { isValidNumber } from '../../utils/number'
 
 interface Props {
   item: Item
@@ -14,9 +18,9 @@ interface Props {
   statusColor?: string
 }
 
-withDefaults(defineProps<Props>(), {
-  typeMeta: () => ({}),
-  statusColor: 'var(--zoro-green)',
+const props = withDefaults(defineProps<Props>(), {
+  typeMeta: undefined,
+  statusColor: undefined,
 })
 
 defineEmits<{
@@ -24,6 +28,24 @@ defineEmits<{
 }>()
 
 const { copied, copy } = useClipboard()
+
+const typeConfig = computed(() => TYPE_CONFIG[props.item.tipo] || {
+  label: props.item.tipo,
+  color: '#FFFFFF',
+  icon: null,
+  hasProgress: false,
+})
+
+const resolvedTypeMeta = computed(() => {
+  if (props.typeMeta && Object.keys(props.typeMeta).length > 0) {
+    return props.typeMeta
+  }
+  return typeConfig.value
+})
+
+const resolvedStatusColor = computed(() => {
+  return props.statusColor || STATUS_COLORS[props.item.estado] || 'var(--zoro-green)'
+})
 </script>
 
 <template>
@@ -43,11 +65,11 @@ const { copied, copy } = useClipboard()
       />
       <div v-else class="flex h-full w-full items-center justify-center bg-bg-elevated">
         <component
-          :is="typeMeta.icon"
-          v-if="typeMeta.icon"
+          :is="resolvedTypeMeta.icon"
+          v-if="resolvedTypeMeta.icon"
           :size="40"
           stroke-width="1.2"
-          :style="{ color: typeMeta.color }"
+          :style="{ color: resolvedTypeMeta.color }"
         />
       </div>
 
@@ -64,12 +86,12 @@ const { copied, copy } = useClipboard()
         <ExternalLink :size="12" stroke-width="2.5" />
       </a>
 
-      <!-- Progreso badge (oculto en Películas) -->
+      <!-- Progreso badge dinámico (Ep., Cap., Pág.) -->
       <div
-        v-if="item.progreso && item.tipo !== 'Película'"
+        v-if="isValidNumber(item.progreso) && item.progreso > 0 && typeConfig.hasProgress"
         class="absolute top-2 right-2 rounded-md bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm backdrop-blur-sm"
       >
-        {{ item.tipo === 'Manga' ? 'Cap.' : 'Ep.' }} {{ item.progreso }}
+        {{ typeConfig.progressShortLabel || 'Prog.' }} {{ item.progreso }}
       </div>
 
       <!-- Hover overlay con acciones de link y puntuación -->
@@ -113,11 +135,11 @@ const { copied, copy } = useClipboard()
     <div class="flex items-center justify-between text-[11px] font-semibold">
       <div
         class="flex items-center gap-[5px]"
-        :style="{ color: statusColor }"
+        :style="{ color: resolvedStatusColor }"
       >
         <span
           class="size-[7px] shrink-0 rounded-full"
-          :style="{ background: statusColor }"
+          :style="{ background: resolvedStatusColor }"
         />
         {{ item.estado }}
       </div>
@@ -134,7 +156,7 @@ const { copied, copy } = useClipboard()
     <!-- Type -->
     <div
       class="text-[10.5px] font-bold uppercase tracking-wider"
-      :style="{ color: typeMeta.color || '#FFFFFF' }"
+      :style="{ color: resolvedTypeMeta.color || '#FFFFFF' }"
     >
       {{ item.tipo }}
     </div>

@@ -4,14 +4,14 @@
  * Barra de navegación lateral de escritorio y barra inferior en móvil.
  * Integrado con useAuthStore para usuario activo y cierre de sesión.
  */
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 import { storeToRefs } from 'pinia'
-import katanaLogo from '../assets/katana_logo.png'
+import { useAuthStore } from '../../stores/auth'
+import { useCrewStore } from '../../stores/crew'
+import katanaLogo from '../../assets/katana_logo.png'
 import { Heart, LogOut, Pencil, Ship, Calendar as CalendarIcon } from '@lucide/vue'
-import EditProfileModal from './auth/EditProfileModal.vue'
-import { useCrewStore } from '../stores/crew'
+import EditProfileModal from '../auth/EditProfileModal.vue'
 
 const isEditProfileOpen = ref(false)
 const crewStore = useCrewStore()
@@ -57,7 +57,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <aside class="flex h-screen w-[260px] shrink-0 flex-col overflow-hidden border-r border-[var(--border-color)] bg-bg-surface p-0 max-md:h-[70px] max-md:w-full max-md:flex-row max-md:items-center max-md:justify-around max-md:border-t max-md:border-r-0 max-md:px-2 max-md:z-40">
+  <aside class="flex h-screen w-[260px] shrink-0 flex-col overflow-hidden border-r border-[var(--border-color)] bg-bg-surface p-0 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:h-[68px] max-md:w-full max-md:flex-row max-md:items-center max-md:justify-around max-md:border-t max-md:border-r-0 max-md:border-[var(--border-color)] max-md:bg-bg-surface/95 max-md:backdrop-blur-md max-md:px-2 max-md:z-40 max-md:pb-[env(safe-area-inset-bottom)]">
 
     <!-- Brand / Logo (oculto en móvil) -->
     <div class="border-b border-white/5 px-5 pt-6 pb-5 max-md:hidden">
@@ -227,3 +227,4 @@ const handleLogout = async () => {
     @close="isEditProfileOpen = false"
   />
 </template>
+

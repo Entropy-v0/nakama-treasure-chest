@@ -10,21 +10,19 @@ import { useItemsStore } from '../stores/items'
 import { useCrewStore } from '../stores/crew'
 import { useItemFilters } from '../composables/useItemFilters'
 import {
-  TYPE_META,
   TYPE_TABS_META,
-  STATUS_COLORS,
   TIPOS_FILTER,
-  ESTADOS_FILTER,
-} from '../composables/useTypeMeta'
+} from '../constants/itemMeta'
 
 import PageContainer from '../components/layout/PageContainer.vue'
 import SearchBar from '../components/collection/SearchBar.vue'
 import FilterTabs, { type FilterTabItem } from '../components/collection/FilterTabs.vue'
 import StatusFilter from '../components/collection/StatusFilter.vue'
-import ItemCard from '../components/collection/ItemCard.vue'
+import ItemGrid from '../components/collection/ItemGrid.vue'
+import PaginationBar from '../components/ui/PaginationBar.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
 import ScopeFilter from '../components/ui/ScopeFilter.vue'
-import ItemDetailsModal from '../components/ItemDetailsModal.vue'
+import ItemDetailsModal from '../components/items/ItemDetailsModal.vue'
 
 const itemsStore = useItemsStore()
 const crewStore = useCrewStore()
@@ -101,9 +99,7 @@ const typeTabs: FilterTabItem[] = TIPOS_FILTER.map(key => {
     <!-- Filtro por estado -->
     <div class="mb-5">
       <StatusFilter
-        :estados="ESTADOS_FILTER"
         :active="activeEstado"
-        :status-colors="STATUS_COLORS"
         @select="setEstado"
       />
     </div>
@@ -114,20 +110,12 @@ const typeTabs: FilterTabItem[] = TIPOS_FILTER.map(key => {
       resultado{{ filteredItems.length !== 1 ? 's' : '' }}
     </p>
 
-    <!-- Grid de Items -->
-    <div
+    <!-- Grid de Items Reutilizable -->
+    <ItemGrid
       v-if="paginated.length > 0"
-      class="mb-10 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-x-4 gap-y-5 max-lg:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] max-md:grid-cols-2"
-    >
-      <ItemCard
-        v-for="item in paginated"
-        :key="item.id"
-        :item="item"
-        :type-meta="TYPE_META[item.tipo] || {}"
-        :status-color="STATUS_COLORS[item.estado] || 'var(--zoro-green)'"
-        @select="selectedItemId = item.id"
-      />
-    </div>
+      :items="paginated"
+      @select="selectedItemId = $event"
+    />
 
     <!-- Estado Vacío Reutilizable -->
     <EmptyState
@@ -137,26 +125,13 @@ const typeTabs: FilterTabItem[] = TIPOS_FILTER.map(key => {
       @action="clearFilters"
     />
 
-    <!-- Paginación -->
-    <div v-if="totalPages > 1" class="mt-10 flex items-center justify-center gap-5 border-t border-white/5 pt-6">
-      <button
-        class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-[var(--border-color)] bg-bg-card font-body text-lg text-text-primary transition-all duration-200 hover:border-[var(--zoro-green-border)] hover:text-green disabled:cursor-not-allowed disabled:opacity-30"
-        :disabled="currentPage === 1"
-        @click="currentPage--"
-      >
-        ‹
-      </button>
-      <span class="text-sm font-semibold text-text-muted">{{ currentPage }} / {{ totalPages }}</span>
-      <button
-        class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-[var(--border-color)] bg-bg-card font-body text-lg text-text-primary transition-all duration-200 hover:border-[var(--zoro-green-border)] hover:text-green disabled:cursor-not-allowed disabled:opacity-30"
-        :disabled="currentPage === totalPages"
-        @click="currentPage++"
-      >
-        ›
-      </button>
-    </div>
+    <!-- Paginación Reutilizable -->
+    <PaginationBar
+      v-model:current-page="currentPage"
+      :total-pages="totalPages"
+    />
 
-    <!-- Modal -->
+    <!-- Modal de Detalles -->
     <ItemDetailsModal
       v-if="selectedItem"
       :item="selectedItem"

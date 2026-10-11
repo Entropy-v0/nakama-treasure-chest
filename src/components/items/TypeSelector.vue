@@ -4,14 +4,16 @@
  * Selector en cuadrícula de tipos de contenido (Anime, Manga, etc.).
  */
 import type { ItemTipo } from '../../types/items'
+import { TIPOS, TYPE_META } from '../../constants/itemMeta'
 
 interface Props {
-  types: (ItemTipo | string)[]
+  types?: (ItemTipo | string)[]
   typeMeta?: Record<string, any>
 }
 
 withDefaults(defineProps<Props>(), {
-  typeMeta: () => ({}),
+  types: () => TIPOS,
+  typeMeta: () => TYPE_META,
 })
 
 const model = defineModel<ItemTipo | string>({ required: true })

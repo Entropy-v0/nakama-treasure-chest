@@ -4,6 +4,8 @@
  * 100% gratuitas, sin necesidad de tokens de API y con soporte CORS nativo para navegador.
  */
 
+import type { ItemTipo } from '../../types/items';
+
 export interface MediaSearchResult {
   id: string | number;
   titulo: string;
@@ -13,7 +15,8 @@ export interface MediaSearchResult {
   totalEpisodios?: number;
   generos?: string[];
   estudio?: string;
-  tipo: 'Anime' | 'Manga' | 'Serie' | 'Película';
+  autor?: string;
+  tipo: ItemTipo;
 }
 
 export const mediaSearchService = {
@@ -22,7 +25,7 @@ export const mediaSearchService = {
    */
   async search(
     query: string,
-    tipo: 'Anime' | 'Manga' | 'Serie' | 'Película',
+    tipo: ItemTipo,
     signal?: AbortSignal
   ): Promise<MediaSearchResult[]> {
     const cleanQuery = query.trim();
@@ -31,11 +34,17 @@ export const mediaSearchService = {
     try {
       if (tipo === 'Anime' || tipo === 'Manga') {
         return await this.searchAniList(cleanQuery, tipo, signal);
-      } else {
+      } else if (tipo === 'Serie' || tipo === 'Película') {
         const westernResults = await this.searchTVMaze(cleanQuery, tipo, signal);
         if (westernResults.length > 0) return westernResults;
         // Si no encuentra en TVMaze, probar en AniList por si es una película de anime
-        return await this.searchAniList(cleanQuery, tipo === 'Película' ? 'Anime' : 'Anime', signal);
+        return await this.searchAniList(cleanQuery, 'Anime', signal);
+      } else if (tipo === 'Libro') {
+        const books = await this.searchGoogleBooks(cleanQuery, signal);
+        if (books.length > 0) return books;
+        return await this.searchOpenLibrary(cleanQuery, signal);
+      } else {
+        return [];
       }
     } catch (err: any) {
       if (err?.name === 'AbortError') {
@@ -166,5 +175,121 @@ export const mediaSearchService = {
         tipo,
       };
     });
+  },
+
+  /**
+   * Búsqueda en Google Books API (Libros).
+   * 100% gratuita, sin tokens y con soporte CORS nativo en navegadores.
+   */
+  async searchGoogleBooks(
+    query: string,
+    signal?: AbortSignal
+  ): Promise<MediaSearchResult[]> {
+    try {
+      const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=6&printType=books`;
+      const response = await fetch(url, { signal });
+      if (!response.ok) return [];
+
+      const json = await response.json();
+      const items = json?.items;
+      if (!Array.isArray(items)) return [];
+
+      return items.map((item: any) => {
+        const info = item.volumeInfo || {};
+
+        // Portada limpia en HTTPS (removiendo parámetro que añade curva artificial a la portada)
+        let cover = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '';
+        if (cover) {
+          cover = cover.replace(/^http:\/\//i, 'https://');
+          cover = cover.replace('&edge=curl', '');
+        }
+
+        // Año de publicación
+        let year: number | undefined = undefined;
+        if (info.publishedDate) {
+          const rawYear = parseInt(info.publishedDate.slice(0, 4), 10);
+          if (!isNaN(rawYear) && rawYear >= 1000 && rawYear <= 2100) {
+            year = rawYear;
+          }
+        }
+
+        // Autor(es)
+        const author = Array.isArray(info.authors) ? info.authors.join(', ') : '';
+
+        // Descripción / Sinopsis limpia sin HTML
+        const cleanDesc = (info.description || '')
+          .replace(/<[^>]*>?/gm, '')
+          .replace(/\n\n/g, ' ')
+          .trim();
+
+        // Géneros / Categorías
+        const genres: string[] = Array.isArray(info.categories)
+          ? info.categories
+              .flatMap((cat: string) => cat.split('/').map(c => c.trim()))
+              .filter(Boolean)
+          : [];
+
+        return {
+          id: `gbooks-${item.id}`,
+          titulo: info.title || 'Sin título',
+          portada: cover,
+          sinopsis: cleanDesc.slice(0, 300) + (cleanDesc.length > 300 ? '...' : ''),
+          anio: year,
+          totalEpisodios: typeof info.pageCount === 'number' && info.pageCount > 0 ? info.pageCount : undefined,
+          generos: genres.slice(0, 4),
+          estudio: info.publisher || '',
+          autor: author,
+          tipo: 'Libro' as ItemTipo,
+        };
+      });
+    } catch (err: any) {
+      if (err?.name === 'AbortError') throw err;
+      console.warn('[mediaSearchService] Error buscando en Google Books:', err);
+      return [];
+    }
+  },
+
+  /**
+   * Búsqueda en Open Library API (Fallback abierto para Libros).
+   */
+  async searchOpenLibrary(
+    query: string,
+    signal?: AbortSignal
+  ): Promise<MediaSearchResult[]> {
+    try {
+      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=6`;
+      const response = await fetch(url, { signal });
+      if (!response.ok) return [];
+
+      const json = await response.json();
+      const docs = json?.docs;
+      if (!Array.isArray(docs)) return [];
+
+      return docs.map((doc: any) => {
+        const author = Array.isArray(doc.author_name) ? doc.author_name.join(', ') : '';
+        const year = typeof doc.first_publish_year === 'number' ? doc.first_publish_year : undefined;
+        const cover = doc.cover_i
+          ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
+          : '';
+        const publisher = Array.isArray(doc.publisher) ? doc.publisher[0] : '';
+        const genres = Array.isArray(doc.subject) ? doc.subject.slice(0, 3) : [];
+
+        return {
+          id: `openlib-${doc.key || Math.random()}`,
+          titulo: doc.title || 'Sin título',
+          portada: cover,
+          anio: year,
+          totalEpisodios: typeof doc.number_of_pages_median === 'number' ? doc.number_of_pages_median : undefined,
+          generos: genres,
+          estudio: publisher,
+          autor: author,
+          tipo: 'Libro' as ItemTipo,
+        };
+      });
+    } catch (err: any) {
+      if (err?.name === 'AbortError') throw err;
+      console.warn('[mediaSearchService] Error buscando en Open Library:', err);
+      return [];
+    }
   },
 };

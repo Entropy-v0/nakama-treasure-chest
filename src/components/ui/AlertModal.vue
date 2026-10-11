@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * AlertModal.vue — Refactorizado (Fase 2)
+ * AlertModal.vue — Global Feedback UI Primitive
  * Modal global para confirmaciones y alertas de la aplicación.
  * Muestra el botón Cancelar estrictamente cuando isConfirm es true.
  */
-import { useAlert } from '../composables/useAlert'
+import { useAlert } from '../../composables/useAlert'
+import BaseButton from './BaseButton.vue'
 
 const { state, confirm, cancel } = useAlert()
 </script>
@@ -75,20 +76,25 @@ const { state, confirm, cancel } = useAlert()
 
       <!-- Actions -->
       <div class="flex w-full justify-center gap-3">
-        <button
+        <BaseButton
           v-if="state.isConfirm"
-          class="flex-1 cursor-pointer rounded-[10px] border border-[var(--border-color)] bg-bg-elevated px-6 py-3 font-body text-[15px] font-bold text-text-secondary transition-all duration-200 hover:border-state-dropped hover:text-state-dropped"
+          variant="secondary"
+          size="md"
+          block
           @click="cancel"
         >
           {{ state.cancelText || 'Cancelar' }}
-        </button>
-        <button
-          class="flex-1 cursor-pointer rounded-[10px] border border-green-light bg-green-dark px-6 py-3 font-body text-[15px] font-bold text-white transition-all duration-200 hover:bg-green-light hover:text-bg-base hover:shadow-[0_0_24px_rgba(61,122,85,0.14)]"
+        </BaseButton>
+        <BaseButton
+          variant="primary"
+          size="md"
+          block
           @click="confirm"
         >
           {{ state.confirmText || 'Aceptar' }}
-        </button>
+        </BaseButton>
       </div>
     </div>
   </div>
 </template>
+

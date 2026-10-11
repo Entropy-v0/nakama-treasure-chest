@@ -3,12 +3,14 @@
  * ScoreSelector — Dumb Component
  * Botones numéricos del 1 al 10 para calificar contenido (permite deseleccionar).
  */
+import { SCORE_OPTIONS } from '../../constants/itemMeta'
+
 interface Props {
   options?: number[]
 }
 
 withDefaults(defineProps<Props>(), {
-  options: () => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  options: () => SCORE_OPTIONS,
 })
 
 const model = defineModel<number | null>({ default: null })

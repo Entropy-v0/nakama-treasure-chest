@@ -2,9 +2,10 @@
 -- NAKAMA (ExLibris) — ESQUEMA COMPLETO DE BASE DE DATOS (INICIALIZACIÓN DESDE CERO)
 -- ==============================================================================
 
--- 1. LIMPIEZA TOTAL PREVIA
--- Descomenta la siguiente línea si deseas eliminar todos los usuarios registrados anteriormente en auth.users:
-delete from auth.users;
+-- 1. LIMPIEZA TOTAL PREVIA (¡CUIDADO: SOLO PARA INICIALIZACIÓN DE CERO!)
+-- Si ya tienes datos reales en tu base de datos, NO EJECUTES ESTE ARCHIVO.
+-- Usa las migraciones incrementales en supabase/migrations/
+-- delete from auth.users;
 
 drop trigger if exists on_auth_user_created on auth.users cascade;
 drop function if exists public.handle_new_user() cascade;
@@ -126,7 +127,7 @@ create table public.items (
   user_id uuid references auth.users(id) on delete cascade default auth.uid() not null,
   crew_id uuid references public.crews(id) on delete set null,
   titulo text not null,
-  tipo text not null check (tipo in ('Anime', 'Manga', 'Serie', 'Película')),
+  tipo text not null check (tipo in ('Anime', 'Manga', 'Serie', 'Película', 'Libro')),
   estado text not null check (estado in ('Pendiente', 'Viendo', 'Completado', 'Abandonado', 'En Pausa')) default 'Pendiente',
   portada text,
   puntuacion smallint check (puntuacion >= 1 and puntuacion <= 10),

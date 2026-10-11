@@ -7,10 +7,9 @@
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
-import Sidebar from './components/Sidebar.vue'
-import MobileHeader from './components/layout/MobileHeader.vue'
+import AppLayout from './components/layout/AppLayout.vue'
 import LoadingScreen from './components/ui/LoadingScreen.vue'
-import AlertModal from './components/AlertModal.vue'
+import AlertModal from './components/ui/AlertModal.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -27,20 +26,9 @@ onMounted(async () => {
   <LoadingScreen v-if="!authStore.isInitialized" />
 
   <!-- Layout protegido: Solo accesible cuando la sesión está verificada y no es ruta guest -->
-  <div
-    v-else-if="authStore.isAuthenticated && !route.meta.guestOnly"
-    class="flex h-screen w-screen flex-col overflow-hidden bg-bg-base"
-  >
-    <!-- Cabecera superior móvil (marca y perfil) -->
-    <MobileHeader />
-
-    <div class="flex flex-1 overflow-hidden max-md:flex-col-reverse">
-      <Sidebar />
-      <main class="flex-1 overflow-y-auto bg-bg-base">
-        <RouterView />
-      </main>
-    </div>
-  </div>
+  <AppLayout v-else-if="authStore.isAuthenticated && !route.meta.guestOnly">
+    <RouterView />
+  </AppLayout>
 
   <!-- Vistas públicas de autenticación (Login / Register) -->
   <template v-else>

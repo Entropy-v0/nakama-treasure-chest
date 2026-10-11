@@ -105,4 +105,18 @@ export const INITIAL_MOCK_ITEMS: Item[] = [
     autor: 'Tatsuki Fujimoto',
     dia_semana: 'martes',
   },
+  {
+    id: 9,
+    titulo: 'Cien años de soledad',
+    tipo: 'Libro',
+    portada: 'https://images.penguinrandomhouse.com/cover/9780525562443',
+    estado: 'Viendo',
+    puntuacion: 10,
+    progreso: 154,
+    generos: ['Realismo Mágico', 'Clásico', 'Novela'],
+    nota: 'Muchos años después, frente al pelotón de fusilamiento...',
+    anio: 1967,
+    autor: 'Gabriel García Márquez',
+    estudio: 'Editorial Sudamericana',
+  },
 ];

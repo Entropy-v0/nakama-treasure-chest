@@ -4,14 +4,16 @@
  * Selector de estados en forma de píldoras interactivas.
  */
 import type { ItemEstado } from '../../types/items'
+import { ESTADOS, STATUS_COLORS } from '../../constants/itemMeta'
 
 interface Props {
-  statuses: (ItemEstado | string)[]
+  statuses?: (ItemEstado | string)[]
   statusColors?: Record<string, string>
 }
 
 withDefaults(defineProps<Props>(), {
-  statusColors: () => ({}),
+  statuses: () => ESTADOS,
+  statusColors: () => STATUS_COLORS,
 })
 
 const model = defineModel<ItemEstado | string>({ required: true })

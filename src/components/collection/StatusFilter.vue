@@ -3,13 +3,18 @@
  * StatusFilter — Dumb Component
  * Filtro de estado con pills redondeadas y dots de color.
  */
+import { ESTADOS_FILTER, STATUS_COLORS } from '../../constants/itemMeta'
+
 interface Props {
-  estados: string[]
+  estados?: string[]
   active: string
-  statusColors: Record<string, string>
+  statusColors?: Record<string, string>
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  estados: () => ESTADOS_FILTER,
+  statusColors: () => STATUS_COLORS,
+})
 
 defineEmits<{
   select: [estado: string]

@@ -10,6 +10,14 @@ import katanaLogo from '../../assets/katana_logo.png'
 import { User, Pencil, LogOut, X } from '@lucide/vue'
 import EditProfileModal from '../auth/EditProfileModal.vue'
 
+interface Props {
+  isVisible?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isVisible: true,
+})
+
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -33,8 +41,14 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <!-- Barra superior (solo en móviles: md:hidden) -->
-  <header class="hidden h-14 w-full shrink-0 items-center justify-between border-b border-white/5 bg-bg-surface px-4 z-30 max-md:flex">
+  <!-- Barra superior (solo en móviles: md:hidden) con transición suave al hacer scroll -->
+  <header
+    class="hidden h-14 w-full shrink-0 items-center justify-between border-b border-white/5 bg-bg-surface/95 px-4 z-30 backdrop-blur-md max-md:fixed max-md:top-0 max-md:left-0 max-md:right-0 max-md:flex transition-transform duration-300 ease-in-out"
+    :class="{
+      'max-md:-translate-y-full': !isVisible,
+      'max-md:translate-y-0': isVisible,
+    }"
+  >
     <!-- Marca / Logo -->
     <div class="flex items-center gap-2.5">
       <img :src="katanaLogo" alt="Nakama Logo" class="size-8 object-contain [filter:brightness(0)_invert(1)]" />

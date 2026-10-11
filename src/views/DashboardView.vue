@@ -12,7 +12,7 @@ import { useAuthStore } from '../stores/auth'
 import { useCrewStore } from '../stores/crew'
 import { useItemsStore } from '../stores/items'
 import { useItemFilters } from '../composables/useItemFilters'
-import { TYPE_META, STATUS_META, TIPOS, ESTADOS_FILTER } from '../composables/useTypeMeta'
+import { TYPE_META, STATUS_META, TIPOS, ESTADOS_FILTER } from '../constants/itemMeta'
 import type { Item } from '../types/items'
 
 import PageContainer from '../components/layout/PageContainer.vue'
@@ -100,7 +100,7 @@ const pickRandomItem = () => {
 </script>
 
 <template>
-  <PageContainer max-width="max-w-[1100px]">
+  <PageContainer>
     <!-- ── Welcome Header ── -->
     <template #header>
       <div>
@@ -160,7 +160,7 @@ const pickRandomItem = () => {
     <!-- ── Stats: tipos ── -->
     <section class="mb-10">
       <h2 class="mb-4 text-[13px] font-bold uppercase tracking-[2px] text-text-muted">Por tipo</h2>
-      <div class="grid grid-cols-4 gap-4 max-lg:grid-cols-2">
+      <div class="grid grid-cols-5 gap-4 max-xl:grid-cols-3 max-md:grid-cols-2">
         <StatCard
           v-for="card in typeCards"
           :key="card.key"
@@ -192,7 +192,7 @@ const pickRandomItem = () => {
 
       <div
         v-if="displayItems.length > 0"
-        class="grid grid-cols-6 gap-4 max-lg:grid-cols-4 max-md:grid-cols-2"
+        class="grid grid-cols-6 gap-4 max-xl:grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2"
       >
         <RecentItemCard
           v-for="item in recent"

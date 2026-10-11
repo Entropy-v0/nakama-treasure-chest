@@ -6,7 +6,8 @@
  */
 import { ref, computed, watch, isRef, type Ref } from 'vue'
 import type { Item, ItemScope, DiaSemana } from '../types/items'
-import { DIAS_SEMANA } from '../types/items'
+import { DIAS_SEMANA, DIAS_LABELS } from '../constants/itemMeta'
+export { DIAS_LABELS }
 
 export interface ItemFilterCriteria {
   tipo?: string
@@ -16,17 +17,6 @@ export interface ItemFilterCriteria {
   scope?: ItemScope
   hasCrew?: boolean
   soloConDia?: boolean
-}
-
-export const DIAS_LABELS: Record<string, string> = {
-  Todos: 'Todos',
-  lunes: 'Lunes',
-  martes: 'Martes',
-  miercoles: 'Miércoles',
-  jueves: 'Jueves',
-  viernes: 'Viernes',
-  sabado: 'Sábado',
-  domingo: 'Domingo',
 }
 
 // Índice de Date.getDay(): 0 = domingo

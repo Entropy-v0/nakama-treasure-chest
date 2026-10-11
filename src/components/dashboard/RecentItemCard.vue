@@ -3,9 +3,12 @@
  * RecentItemCard — Dumb Component
  * Tarjeta individual de un ítem reciente con portada, link badge, progreso y tipo.
  */
+import { computed } from 'vue'
 import { ExternalLink, Copy, Check, Users } from '@lucide/vue'
 import type { Item } from '../../types/items'
+import { TYPE_CONFIG } from '../../constants/itemMeta'
 import { useClipboard } from '../../composables/useClipboard'
+import { isValidNumber } from '../../utils/number'
 
 interface Props {
   item: Item
@@ -13,12 +16,19 @@ interface Props {
   statusMeta?: Record<string, any>
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   typeMeta: () => ({}),
   statusMeta: () => ({}),
 })
 
 const { copied, copy } = useClipboard()
+
+const typeConfig = computed(() => TYPE_CONFIG[props.item.tipo] || {
+  label: props.item.tipo,
+  color: '#FFFFFF',
+  icon: null,
+  hasProgress: false,
+})
 </script>
 
 <template>
@@ -87,12 +97,12 @@ const { copied, copy } = useClipboard()
         <span>Juntos</span>
       </div>
 
-      <!-- Progress badge (no aplica en Películas) -->
+      <!-- Progress badge dinámico -->
       <div
-        v-if="item.progreso && item.tipo !== 'Película'"
+        v-if="isValidNumber(item.progreso) && item.progreso > 0 && typeConfig.hasProgress"
         class="absolute top-1.5 right-1.5 rounded bg-black/80 px-1 py-0.5 text-[9px] font-bold text-white shadow-sm backdrop-blur-sm"
       >
-        {{ item.tipo === 'Manga' ? 'Cap.' : 'Ep.' }} {{ item.progreso }}
+        {{ typeConfig.progressShortLabel || 'Prog.' }} {{ item.progreso }}
       </div>
     </div>
 

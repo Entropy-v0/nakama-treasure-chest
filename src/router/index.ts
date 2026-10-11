@@ -54,6 +54,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, title: 'Nakama' },
   },
   {
+    path: '/edit/:id',
+    name: 'EditItem',
+    component: () => import('../views/AddItemView.vue'),
+    meta: { requiresAuth: true, title: 'Nakama - Editar' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/dashboard',
   },

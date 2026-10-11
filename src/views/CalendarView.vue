@@ -9,16 +9,15 @@ import { storeToRefs } from 'pinia'
 import { useItemsStore } from '../stores/items'
 import { useCrewStore } from '../stores/crew'
 import { useItemFilters, getDiaActual } from '../composables/useItemFilters'
-import { TYPE_META, STATUS_COLORS } from '../composables/useTypeMeta'
 import type { Item } from '../types/items'
 
 import PageContainer from '../components/layout/PageContainer.vue'
 import SearchBar from '../components/collection/SearchBar.vue'
 import ScopeFilter from '../components/ui/ScopeFilter.vue'
 import DayFilter from '../components/calendar/DayFilter.vue'
-import ItemCard from '../components/collection/ItemCard.vue'
+import ItemGrid from '../components/collection/ItemGrid.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
-import ItemDetailsModal from '../components/ItemDetailsModal.vue'
+import ItemDetailsModal from '../components/items/ItemDetailsModal.vue'
 
 const itemsStore = useItemsStore()
 const crewStore = useCrewStore()
@@ -97,20 +96,12 @@ const activeDiaLabel = computed(() => labels[activeDia.value] || activeDia.value
       <span v-if="activeDia !== 'Todos'"> para el <strong class="text-text-primary">{{ activeDiaLabel }}</strong></span>
     </p>
 
-    <!-- Grid de Items -->
-    <div
+    <!-- Grid de Items Reutilizable -->
+    <ItemGrid
       v-if="broadcastItems.length > 0"
-      class="mb-10 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-x-4 gap-y-5 max-lg:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] max-md:grid-cols-2"
-    >
-      <ItemCard
-        v-for="item in broadcastItems"
-        :key="item.id"
-        :item="item"
-        :type-meta="TYPE_META[item.tipo] || {}"
-        :status-color="STATUS_COLORS[item.estado] || 'var(--zoro-green)'"
-        @select="selectedItemId = item.id"
-      />
-    </div>
+      :items="broadcastItems"
+      @select="selectedItemId = $event"
+    />
 
     <!-- Estado Vacío Reutilizable (Dumb Component) -->
     <EmptyState
