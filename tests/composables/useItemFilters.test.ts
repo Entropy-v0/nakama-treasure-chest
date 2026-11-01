@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { matchesItemFilters, type ItemFilterCriteria } from '@/composables/useItemFilters'
+import {
+  matchesItemFilters,
+  compareByEstadoPriority,
+  getRecentItems,
+  getItemsByEstados,
+  type ItemFilterCriteria,
+} from '@/composables/useItemFilters'
 import type { Item } from '@/types/items'
 
 const sampleBook: Item = {
@@ -66,3 +72,48 @@ describe('matchesItemFilters', () => {
   })
 })
 
+
+describe('compareByEstadoPriority', () => {
+  const make = (id: number, estado: Item['estado']): Item => ({ id, titulo: `T${id}`, tipo: 'Anime', estado })
+
+  it('ordena por jerarquía Viendo → Pendiente → En Pausa → Completado → Abandonado', () => {
+    const items = [
+      make(1, 'Completado'),
+      make(2, 'Abandonado'),
+      make(3, 'En Pausa'),
+      make(4, 'Pendiente'),
+      make(5, 'Viendo'),
+    ]
+    expect([...items].sort(compareByEstadoPriority).map(i => i.estado)).toEqual([
+      'Viendo', 'Pendiente', 'En Pausa', 'Completado', 'Abandonado',
+    ])
+  })
+
+  it('en empate de estado, muestra primero el más reciente (id mayor)', () => {
+    const items = [make(1, 'Viendo'), make(3, 'Viendo'), make(2, 'Viendo')]
+    expect([...items].sort(compareByEstadoPriority).map(i => i.id)).toEqual([3, 2, 1])
+  })
+})
+
+describe('getRecentItems', () => {
+  const make = (id: number): Item => ({ id, titulo: `T${id}`, tipo: 'Anime', estado: 'Viendo' })
+
+  it('devuelve los N más recientes por id descendente sin mutar el original', () => {
+    const items = [make(1), make(5), make(3), make(4), make(2)]
+    expect(getRecentItems(items, 3).map(i => i.id)).toEqual([5, 4, 3])
+    expect(items.map(i => i.id)).toEqual([1, 5, 3, 4, 2])
+  })
+})
+
+describe('getItemsByEstados', () => {
+  const make = (id: number, estado: Item['estado']): Item => ({ id, titulo: `T${id}`, tipo: 'Anime', estado })
+
+  it('devuelve solo los items con estados incluidos en la lista', () => {
+    const items = [make(1, 'Viendo'), make(2, 'Completado'), make(3, 'Pendiente'), make(4, 'Abandonado')]
+    expect(getItemsByEstados(items, ['Viendo', 'Pendiente']).map(i => i.id)).toEqual([1, 3])
+  })
+
+  it('devuelve una lista vacía si ningún estado coincide', () => {
+    expect(getItemsByEstados([make(1, 'Completado')], ['Viendo'])).toEqual([])
+  })
+})

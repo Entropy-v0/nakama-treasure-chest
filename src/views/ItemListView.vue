@@ -4,10 +4,8 @@
  * Orquesta la visualización de la colección completa.
  * Consume el motor centralizado useItemFilters para búsqueda, filtrado y paginación.
  */
-import { ref, computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useItemsStore } from '../stores/items'
-import { useCrewStore } from '../stores/crew'
+import { ref, computed } from 'vue'
+import { useCollectionData } from '../composables/useCollectionData'
 import { useItemFilters } from '../composables/useItemFilters'
 import {
   TYPE_TABS_META,
@@ -24,11 +22,8 @@ import EmptyState from '../components/ui/EmptyState.vue'
 import ScopeFilter from '../components/ui/ScopeFilter.vue'
 import ItemDetailsModal from '../components/items/ItemDetailsModal.vue'
 
-const itemsStore = useItemsStore()
-const crewStore = useCrewStore()
-
-const { items, isLoading, isLoaded } = storeToRefs(itemsStore)
-const { hasCrew } = storeToRefs(crewStore)
+// Datos + carga inicial centralizada
+const { items, isLoading, hasCrew } = useCollectionData('ItemListView')
 
 // Motor centralizado de filtrado y paginación
 const {
@@ -43,23 +38,12 @@ const {
   setTipo,
   setEstado,
   clearFilters,
-} = useItemFilters(items, { hasCrew, itemsPerPage: 18 })
+} = useItemFilters(items, { hasCrew, itemsPerPage: 20 })
 
 const selectedItemId = ref<number | null>(null)
 const selectedItem = computed(() => {
   if (selectedItemId.value === null) return null
   return items.value.find(i => i.id === selectedItemId.value) || null
-})
-
-onMounted(async () => {
-  crewStore.loadCrewData()
-  if (!isLoaded.value) {
-    try {
-      await itemsStore.loadItems()
-    } catch (e) {
-      console.warn('[ItemListView] Error cargando items:', e)
-    }
-  }
 })
 
 /* ── Tab data para FilterTabs ── */

@@ -17,7 +17,7 @@ describe('itemMeta configuration', () => {
   })
 
   it('debe contener los 5 estados de seguimiento', () => {
-    expect(ESTADOS).toEqual(['Pendiente', 'Viendo', 'Completado', 'Abandonado', 'En Pausa'])
+    expect(ESTADOS).toEqual(['Viendo', 'Pendiente', 'En Pausa', 'Completado', 'Abandonado'])
   })
 
   it('debe configurar correctamente el tipo Libro', () => {

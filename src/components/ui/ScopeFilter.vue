@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * ScopeFilter.vue — Dumb Component
- * Selector de ámbito de tripulación (Todos, Compartidos, Solo mío / Personal).
+ * Selector de ámbito de tripulación (Solo mío / Personal, Compartidos, Todos).
  * Reutilizable en Dashboard, Colección y Calendario.
  */
 import { Layers, Users, User } from '@lucide/vue'
@@ -15,7 +15,7 @@ withDefaults(defineProps<Props>(), {
   personalLabel: 'Solo mío',
 })
 
-const model = defineModel<ItemScope>({ default: 'todos' })
+const model = defineModel<ItemScope>({ default: 'personal' })
 </script>
 
 <template>
@@ -23,11 +23,11 @@ const model = defineModel<ItemScope>({ default: 'todos' })
     <button
       type="button"
       class="flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-body text-xs font-semibold transition-all duration-200"
-      :class="model === 'todos' ? 'bg-green font-bold text-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
-      @click="model = 'todos'"
+      :class="model === 'personal' ? 'bg-green font-bold text-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
+      @click="model = 'personal'"
     >
-      <Layers :size="13" />
-      <span>Todos</span>
+      <User :size="13" />
+      <span>{{ personalLabel }}</span>
     </button>
 
     <button
@@ -43,11 +43,11 @@ const model = defineModel<ItemScope>({ default: 'todos' })
     <button
       type="button"
       class="flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-body text-xs font-semibold transition-all duration-200"
-      :class="model === 'personal' ? 'bg-green font-bold text-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
-      @click="model = 'personal'"
+      :class="model === 'todos' ? 'bg-green font-bold text-black shadow-sm' : 'text-text-muted hover:text-text-primary'"
+      @click="model = 'todos'"
     >
-      <User :size="13" />
-      <span>{{ personalLabel }}</span>
+      <Layers :size="13" />
+      <span>Todos</span>
     </button>
   </div>
 </template>

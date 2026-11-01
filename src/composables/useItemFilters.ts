@@ -5,8 +5,8 @@
  * usa este archivo. No debe existir otro `.filter()` de items en vistas, stores o servicios.
  */
 import { ref, computed, watch, isRef, type Ref } from 'vue'
-import type { Item, ItemScope, DiaSemana } from '../types/items'
-import { DIAS_SEMANA, DIAS_LABELS } from '../constants/itemMeta'
+import type { Item, ItemScope, ItemEstado, DiaSemana } from '../types/items'
+import { DIAS_SEMANA, DIAS_LABELS, ESTADO_PRIORITY } from '../constants/itemMeta'
 export { DIAS_LABELS }
 
 export interface ItemFilterCriteria {
@@ -48,6 +48,37 @@ export function matchesItemFilters(item: Item, c: ItemFilterCriteria): boolean {
   return true
 }
 
+/**
+ * Orden puro por jerarquía de estado y, en empate, id descendente (testeable sin Vue)
+ */
+export function compareByEstadoPriority(a: Item, b: Item): number {
+  const pa = ESTADO_PRIORITY[a.estado] ?? Number.MAX_SAFE_INTEGER
+  const pb = ESTADO_PRIORITY[b.estado] ?? Number.MAX_SAFE_INTEGER
+  if (pa !== pb) return pa - pb
+  return b.id - a.id
+}
+
+/**
+ * Orden puro por recencia: el último añadido (id mayor) primero.
+ */
+export function compareByRecent(a: Item, b: Item): number {
+  return b.id - a.id
+}
+
+/**
+ * Devuelve los `limit` items añadidos más recientemente (sin mutar la lista original).
+ */
+export function getRecentItems(items: readonly Item[], limit: number): Item[] {
+  return [...items].sort(compareByRecent).slice(0, limit)
+}
+
+/**
+ * Devuelve solo los items cuyo estado esté en la lista indicada (sin mutar la lista original).
+ */
+export function getItemsByEstados(items: readonly Item[], estados: readonly ItemEstado[]): Item[] {
+  return items.filter(item => estados.includes(item.estado))
+}
+
 export interface UseItemFiltersOptions {
   hasCrew?: Ref<boolean> | boolean
   initialFilters?: Partial<ItemFilterCriteria>
@@ -59,7 +90,7 @@ export function useItemFilters(itemsSource: Ref<Item[]>, options: UseItemFilters
     tipo: 'Todos',
     estado: 'Todos',
     diaSemana: 'Todos',
-    scope: 'todos' as ItemScope,
+    scope: 'personal' as ItemScope,
     search: '',
     ...options.initialFilters,
   }
@@ -84,7 +115,13 @@ export function useItemFilters(itemsSource: Ref<Item[]>, options: UseItemFilters
     soloConDia,
   }))
 
-  const filteredItems = computed(() => itemsSource.value.filter(item => matchesItemFilters(item, criteria.value)))
+  // Filtra y ordena por jerarquía de estado (Viendo → Pendiente → En Pausa → Completado → Abandonado).
+  // Dentro del mismo estado, el más reciente (id mayor) primero.
+  const filteredItems = computed(() =>
+    itemsSource.value
+      .filter(item => matchesItemFilters(item, criteria.value))
+      .sort(compareByEstadoPriority)
+  )
 
   // ── Conteos ──
   // Cada conteo respeta todos los filtros activos EXCEPTO el de su propio campo,

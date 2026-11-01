@@ -20,8 +20,21 @@ export const TIPOS: ItemTipo[] = ['Anime', 'Manga', 'Serie', 'Película', 'Libro
 export const TIPOS_FILTER: Array<ItemTipo | 'Todos'> = ['Todos', 'Anime', 'Manga', 'Serie', 'Película', 'Libro']
 
 /* ── Estados de seguimiento ── */
-export const ESTADOS: ItemEstado[] = ['Pendiente', 'Viendo', 'Completado', 'Abandonado', 'En Pausa']
-export const ESTADOS_FILTER: Array<ItemEstado | 'Todos'> = ['Todos', 'Viendo', 'Completado', 'Pendiente', 'Abandonado', 'En Pausa']
+// Orden jerárquico: Viendo → Pendiente → En Pausa → Completado → Abandonado
+export const ESTADOS: ItemEstado[] = ['Viendo', 'Pendiente', 'En Pausa', 'Completado', 'Abandonado']
+export const ESTADOS_FILTER: Array<ItemEstado | 'Todos'> = ['Todos', 'Viendo', 'Pendiente', 'En Pausa', 'Completado', 'Abandonado']
+
+/* ── Prioridad de estado para ordenar la colección (menor = aparece primero) ── */
+export const ESTADO_PRIORITY: Record<ItemEstado, number> = {
+  'Viendo': 1,
+  'Pendiente': 2,
+  'En Pausa': 3,
+  'Completado': 4,
+  'Abandonado': 5,
+}
+
+/* ── Estados "activos": lo que estás siguiendo o tienes pendiente (sorteo "¿Qué vemos hoy?") ── */
+export const ESTADOS_ACTIVOS: readonly ItemEstado[] = ['Viendo', 'Pendiente']
 
 /* ── Puntuaciones ── */
 export const SCORE_OPTIONS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

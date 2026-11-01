@@ -2,17 +2,15 @@
 /**
  * Dashboard.vue — Smart Component (refactorizado)
  * Orquesta los sub-componentes del dashboard.
- * Filtrado por ámbito y conteos: motor centralizado useItemFilters.
+ * Datos + carga: useCollectionData. Filtrado, orden y conteos: motor centralizado useItemFilters.
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
 import { Anchor, Users, User, Layers, Dices, Ship, Check, Play, ExternalLink, X, Sparkles } from '@lucide/vue'
 import { useAuthStore } from '../stores/auth'
-import { useCrewStore } from '../stores/crew'
-import { useItemsStore } from '../stores/items'
-import { useItemFilters } from '../composables/useItemFilters'
-import { TYPE_META, STATUS_META, TIPOS, ESTADOS_FILTER } from '../constants/itemMeta'
+import { useCollectionData } from '../composables/useCollectionData'
+import { useItemFilters, getRecentItems, getItemsByEstados } from '../composables/useItemFilters'
+import { TYPE_META, STATUS_META, TIPOS, ESTADOS_FILTER, ESTADOS_ACTIVOS } from '../constants/itemMeta'
 import type { Item } from '../types/items'
 
 import PageContainer from '../components/layout/PageContainer.vue'
@@ -27,11 +25,9 @@ const emit = defineEmits<{
 }>()
 const router = useRouter()
 const authStore = useAuthStore()
-const crewStore = useCrewStore()
-const itemsStore = useItemsStore()
 
-const { crew, hasCrew } = storeToRefs(crewStore)
-const { items, isLoaded } = storeToRefs(itemsStore)
+// Datos + carga inicial centralizada
+const { items, crew, hasCrew } = useCollectionData('Dashboard')
 
 // Motor centralizado: solo usamos el ámbito y los conteos
 const {
@@ -45,25 +41,12 @@ const isRandomPickerOpen = ref(false)
 const selectedRandomItem = ref<Item | null>(null)
 const isSpinning = ref(false)
 
-onMounted(async () => {
-  crewStore.loadCrewData()
-  if (!isLoaded.value) {
-    try {
-      await itemsStore.loadItems()
-    } catch (e) {
-      console.warn('[Dashboard] Error cargando items:', e)
-    }
-  }
-})
-
 const goToView = (path: string, viewName?: string) => {
   if (viewName) emit('change-view', viewName)
   router.push(path)
 }
 
-const recent = computed(() =>
-  [...displayItems.value].sort((a, b) => b.id - a.id).slice(0, 6)
-)
+const recent = computed(() => getRecentItems(displayItems.value, 6))
 
 const totalItems = computed(() => displayItems.value.length)
 
@@ -80,23 +63,6 @@ const totalByStatus = computed(() =>
   Object.fromEntries(ESTADOS_FILTER.slice(1).map(estado => [estado, conteoPorEstado.value[estado] ?? 0]))
 )
 
-/* ── Lógica de Sorteo "¿Qué vemos hoy?" ── */
-const pickRandomItem = () => {
-  let pool = displayItems.value.filter(i => i.estado === 'Pendiente' || i.estado === 'Viendo')
-  if (pool.length === 0) {
-    pool = displayItems.value
-  }
-  if (pool.length === 0) return
-
-  isSpinning.value = true
-  isRandomPickerOpen.value = true
-
-  setTimeout(() => {
-    const randomIndex = Math.floor(Math.random() * pool.length)
-    selectedRandomItem.value = pool[randomIndex]
-    isSpinning.value = false
-  }, 400)
-}
 </script>
 
 <template>
@@ -117,18 +83,6 @@ const pickRandomItem = () => {
       </div>
 
       <div class="flex items-center gap-3 flex-wrap">
-        <!-- Botón ¿Qué vemos hoy? -->
-        <button
-          v-if="items.length > 0"
-          type="button"
-          class="flex items-center gap-2 rounded-lg border border-gold/40 bg-gold/10 px-5 py-3 font-body text-sm font-semibold text-gold cursor-pointer transition-all duration-200 hover:bg-gold hover:text-black hover:shadow-[0_0_24px_rgba(212,175,55,0.25)]"
-          title="Elegir una película o serie al azar para ver hoy"
-          @click="pickRandomItem"
-        >
-          <Dices :size="18" />
-          <span>¿Qué vemos hoy?</span>
-        </button>
-
         <!-- Botón Agregar contenido -->
         <button
           class="flex items-center gap-2 whitespace-nowrap rounded-lg border border-green-light bg-green-dark px-6 py-3 font-body text-sm font-semibold text-white cursor-pointer transition-all duration-200 hover:bg-green-light hover:text-bg-base hover:shadow-[0_0_24px_rgba(61,122,85,0.1)]"
@@ -279,29 +233,7 @@ const pickRandomItem = () => {
                 {{ selectedRandomItem.nota }}
               </p>
             </div>
-
-            <!-- Botones de Acción -->
-            <div class="flex items-center justify-center gap-3 pt-2">
-              <button
-                type="button"
-                class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-bg-elevated border border-border-default text-xs font-semibold text-text-secondary hover:text-text-primary hover:border-gold cursor-pointer transition-colors"
-                @click="pickRandomItem"
-              >
-                <Dices :size="14" />
-                <span>Girar otra vez</span>
-              </button>
-
-              <a
-                v-if="selectedRandomItem.link"
-                :href="selectedRandomItem.link"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold text-black text-xs font-bold hover:brightness-110 cursor-pointer transition-all shadow-[0_2px_12px_rgba(212,175,55,0.3)]"
-              >
-                <Play :size="13" fill="currentColor" />
-                <span>Ver Ahora</span>
-              </a>
-            </div>
+  
           </div>
         </div>
       </div>

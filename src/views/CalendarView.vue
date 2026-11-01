@@ -1,13 +1,11 @@
 <script setup lang="ts">
 /**
  * CalendarView.vue — Smart View
- * Consume directamente useItemsStore, useCrewStore y el motor centralizado useItemFilters.
+ * Consume useCollectionData (datos + carga) y el motor centralizado useItemFilters.
  * Cero intermediarios innecesarios.
  */
-import { ref, computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useItemsStore } from '../stores/items'
-import { useCrewStore } from '../stores/crew'
+import { ref, computed } from 'vue'
+import { useCollectionData } from '../composables/useCollectionData'
 import { useItemFilters, getDiaActual } from '../composables/useItemFilters'
 import type { Item } from '../types/items'
 
@@ -19,25 +17,11 @@ import ItemGrid from '../components/collection/ItemGrid.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
 import ItemDetailsModal from '../components/items/ItemDetailsModal.vue'
 
-const itemsStore = useItemsStore()
-const crewStore = useCrewStore()
-
-const { items, isLoading, isLoaded } = storeToRefs(itemsStore)
-const { hasCrew } = storeToRefs(crewStore)
+// Datos + carga inicial centralizada
+const { items, isLoading, hasCrew } = useCollectionData('CalendarView')
 
 const diaDeHoy = getDiaActual()
 const selectedItemId = ref<number | null>(null)
-
-onMounted(async () => {
-  crewStore.loadCrewData()
-  if (!isLoaded.value) {
-    try {
-      await itemsStore.loadItems()
-    } catch (e) {
-      console.warn('[CalendarView] Error cargando items:', e)
-    }
-  }
-})
 
 // Motor centralizado de filtrado con regla de emisiones
 const {
