@@ -116,8 +116,7 @@ const {
                 v-model="form.temporada"
                 type="number"
                 min="0"
-                label="Temporada actual"
-                hint="(en la que vas)"
+                label="Temporada"
                 placeholder="ej: 1"
               />
 
@@ -127,8 +126,7 @@ const {
                 v-model="form.progreso"
                 type="number"
                 min="0"
-                :label="currentConfig.progressLabel || 'Progreso actual'"
-                hint="(en el que vas)"
+                :label="currentConfig.progressLabel || 'Progreso'"
                 :placeholder="currentConfig.progressPlaceholder || 'ej: 1'"
               />
             </div>

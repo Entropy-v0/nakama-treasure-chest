@@ -95,5 +95,40 @@ describe('mediaSearchService', () => {
     expect(book.portada).toBe('https://covers.openlibrary.org/b/id/98765-M.jpg')
     expect(book.tipo).toBe('Libro')
   })
+
+  it('debe buscar y mapear correctamente películas desde iTunes Media API', async () => {
+    const mockITunesResponse = {
+      resultCount: 1,
+      results: [
+        {
+          trackId: 395977931,
+          trackName: 'Inception',
+          artworkUrl100: 'http://is1-ssl.mzstatic.com/image/thumb/Video/100x100bb.jpg',
+          releaseDate: '2010-07-16T07:00:00Z',
+          longDescription: 'Dom Cobb es un ladrón hábil que roba secretos corporativos.',
+          primaryGenreName: 'Acción y aventura',
+          artistName: 'Christopher Nolan',
+        },
+      ],
+    }
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockITunesResponse,
+    } as Response)
+
+    const results = await mediaSearchService.search('Inception', 'Película')
+
+    expect(results).toHaveLength(1)
+    const movie = results[0]
+    expect(movie.titulo).toBe('Inception')
+    expect(movie.anio).toBe(2010)
+    expect(movie.estudio).toBe('Christopher Nolan')
+    expect(movie.generos).toEqual(['Acción y aventura'])
+    expect(movie.sinopsis).toBe('Dom Cobb es un ladrón hábil que roba secretos corporativos.')
+    // Debe convertir la portada a 600x600 y HTTPS
+    expect(movie.portada).toBe('https://is1-ssl.mzstatic.com/image/thumb/Video/600x600bb.jpg')
+    expect(movie.tipo).toBe('Película')
+  })
 })
 

@@ -1,6 +1,7 @@
 /**
  * mediaSearch.service.ts — Servicio de autocompletado y búsqueda multimedia pública
- * Utiliza AniList GraphQL (para Anime/Manga) y TVMaze API (para Series/Películas).
+ * Utiliza AniList GraphQL (para Anime/Manga), iTunes Search API (para Películas)
+ * y TVMaze API (para Series).
  * 100% gratuitas, sin necesidad de tokens de API y con soporte CORS nativo para navegador.
  */
 
@@ -34,10 +35,18 @@ export const mediaSearchService = {
     try {
       if (tipo === 'Anime' || tipo === 'Manga') {
         return await this.searchAniList(cleanQuery, tipo, signal);
-      } else if (tipo === 'Serie' || tipo === 'Película') {
+      } else if (tipo === 'Película') {
+        const movieResults = await this.searchITunesMovies(cleanQuery, signal);
+        if (movieResults.length > 0) return movieResults;
+        // Si no encuentra en iTunes (ej. película de anime), probar en AniList
+        const animeResults = await this.searchAniList(cleanQuery, 'Anime', signal);
+        if (animeResults.length > 0) return animeResults;
+        // Fallback final por si es una película de TV documentada en TVMaze
+        return await this.searchTVMaze(cleanQuery, 'Película', signal);
+      } else if (tipo === 'Serie') {
         const westernResults = await this.searchTVMaze(cleanQuery, tipo, signal);
         if (westernResults.length > 0) return westernResults;
-        // Si no encuentra en TVMaze, probar en AniList por si es una película de anime
+        // Si no encuentra en TVMaze, probar en AniList por si es una serie anime
         return await this.searchAniList(cleanQuery, 'Anime', signal);
       } else if (tipo === 'Libro') {
         const books = await this.searchGoogleBooks(cleanQuery, signal);
@@ -136,6 +145,67 @@ export const mediaSearchService = {
         tipo,
       };
     });
+  },
+
+  /**
+   * Búsqueda en iTunes Search API (Películas comerciales de cine y streaming).
+   * 100% gratuita, pública, sin necesidad de tokens de API y con soporte CORS nativo.
+   */
+  async searchITunesMovies(
+    query: string,
+    signal?: AbortSignal
+  ): Promise<MediaSearchResult[]> {
+    try {
+      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&country=es&media=movie&entity=movie&limit=6`;
+      const response = await fetch(url, { signal });
+      if (!response.ok) return [];
+
+      const json = await response.json();
+      const results = json?.results;
+      if (!Array.isArray(results)) return [];
+
+      return results.map((item: any) => {
+        // Portada: reescalar de 100x100 a 600x600 para alta definición en carteles
+        let cover = item.artworkUrl100 || '';
+        if (cover) {
+          cover = cover.replace(/\/100x100bb\./, '/600x600bb.');
+          cover = cover.replace(/^http:\/\//i, 'https://');
+        }
+
+        // Año de lanzamiento
+        let year: number | undefined = undefined;
+        if (item.releaseDate) {
+          const rawYear = parseInt(item.releaseDate.slice(0, 4), 10);
+          if (!isNaN(rawYear) && rawYear >= 1900 && rawYear <= 2100) {
+            year = rawYear;
+          }
+        }
+
+        // Sinopsis limpia sin etiquetas HTML
+        const cleanDesc = (item.longDescription || item.shortDescription || '')
+          .replace(/<[^>]*>?/gm, '')
+          .replace(/\n\n/g, ' ')
+          .trim();
+
+        // Género principal
+        const genres = item.primaryGenreName ? [item.primaryGenreName] : [];
+
+        return {
+          id: `itunes-${item.trackId || Math.random()}`,
+          titulo: item.trackName || 'Sin título',
+          portada: cover,
+          sinopsis: cleanDesc.slice(0, 300) + (cleanDesc.length > 300 ? '...' : ''),
+          anio: year,
+          generos: genres,
+          estudio: item.artistName || '',
+          tipo: 'Película' as ItemTipo,
+        };
+      });
+    } catch (err: any) {
+      if (err?.name === 'AbortError') throw err;
+      console.warn('[mediaSearchService] Error buscando en iTunes Movies:', err);
+      return [];
+    }
   },
 
   /**

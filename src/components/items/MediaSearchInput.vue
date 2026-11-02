@@ -5,7 +5,7 @@
  * Incluye auto-cierre por inactividad de mouse, desplazamiento en pantalla (scroll/touch),
  * clic fuera (click-outside) y tecla Escape.
  */
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Sparkles, Loader2, X } from '@lucide/vue'
 import FormInput from '../ui/FormInput.vue'
 import type { MediaSearchResult } from '../../services/api/mediaSearch.service'
@@ -30,6 +30,17 @@ const emit = defineEmits<{
 const containerRef = ref<HTMLElement | null>(null)
 const dropdownRef = ref<HTMLElement | null>(null)
 const showDropdown = ref(false)
+
+const sourceLabel = computed(() => {
+  const first = props.results[0]
+  if (!first) return 'Sugerencias'
+  const idStr = String(first.id)
+  if (idStr.startsWith('itunes')) return 'Sugerencias de Películas'
+  if (idStr.startsWith('tvmaze')) return 'Sugerencias de Series'
+  if (idStr.startsWith('gbooks') || idStr.startsWith('openlib')) return 'Sugerencias de Libros'
+  if (idStr.startsWith('anilist')) return 'Sugerencias de AniList'
+  return 'Sugerencias multimedia'
+})
 
 let inactivityTimer: ReturnType<typeof setTimeout> | null = null
 let isHovered = false
@@ -197,7 +208,7 @@ onUnmounted(() => {
         <div class="flex items-center justify-between border-b border-white/5 bg-bg-elevated/40 px-3 py-1.5 text-[11px]">
           <span class="flex items-center gap-1 font-semibold text-green">
             <Sparkles :size="12" />
-            <span>Sugerencias de AniList</span>
+            <span>{{ sourceLabel }}</span>
           </span>
           <button
             type="button"
