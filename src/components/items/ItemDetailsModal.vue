@@ -49,6 +49,18 @@ const typeConfig = computed(() => TYPE_CONFIG[props.item.tipo] || {
 const typeMeta = computed(() => TYPE_META[props.item.tipo] || { color: 'var(--text-muted)', label: props.item.tipo })
 const statusMeta = computed(() => STATUS_META[props.item.estado] || { color: 'var(--text-muted)', bg: 'transparent' })
 
+const formatFinishedDate = (dateStr?: string | null) => {
+  if (!dateStr) return ''
+  try {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    if (!year || !month || !day) return dateStr
+    const d = new Date(year, month - 1, day)
+    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch {
+    return dateStr
+  }
+}
+
 const progresoLabel = computed(() => {
   return typeConfig.value.progressLabel?.replace(' actual', '') || 'Progreso'
 })
@@ -225,10 +237,21 @@ const handleDelete = async () => {
                 <Bookmark :size="17" stroke-width="2" />
               </div>
               <div class="flex flex-col leading-tight">
-                <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">{{ progresoLabel }} actual</span>
+                <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">
+                  <template v-if="isValidNumber(item.temporada) && item.temporada > 0">
+                    Temporada {{ item.temporada }} · 
+                  </template>
+                  {{ progresoLabel }} actual
+                </span>
                 <span class="font-heading text-lg font-bold text-text-primary">
                   <template v-if="isValidNumber(item.progreso)">
+                    <span v-if="isValidNumber(item.temporada) && item.temporada > 0" class="text-green mr-1.5 font-bold">
+                      T{{ item.temporada }}
+                    </span>
                     {{ progresoLabel }} {{ item.progreso }}
+                  </template>
+                  <template v-else-if="isValidNumber(item.temporada) && item.temporada > 0">
+                    Temporada {{ item.temporada }}
                   </template>
                   <template v-else>
                     <span class="text-sm font-normal text-text-muted">Sin registrar</span>
@@ -259,6 +282,14 @@ const handleDelete = async () => {
 
           <!-- Meta info -->
           <div class="grid grid-cols-2 gap-3">
+            <div v-if="isValidNumber(item.temporada) && item.temporada > 0" class="flex flex-col gap-0.5">
+              <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Temporada</span>
+              <span class="text-sm font-medium text-text-primary">Temporada {{ item.temporada }}</span>
+            </div>
+            <div v-if="item.fecha_terminado" class="flex flex-col gap-0.5">
+              <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Finalizado</span>
+              <span class="text-sm font-medium text-text-primary">{{ formatFinishedDate(item.fecha_terminado) }}</span>
+            </div>
             <div v-if="isValidNumber(item.anio)" class="flex flex-col gap-0.5">
               <span class="text-[10px] font-bold uppercase tracking-[1.2px] text-text-muted">Año</span>
               <span class="text-sm font-medium text-text-primary">{{ item.anio }}</span>

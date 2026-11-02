@@ -43,6 +43,8 @@ export type Item = {
   estudio?: string | null;
   link?: string | null;
   progreso?: number | null;
+  temporada?: number | null;
+  fecha_terminado?: string | null;
   dia_semana?: DiaSemana | null;
   created_at?: string;
   updated_at?: string;

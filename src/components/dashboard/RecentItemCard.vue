@@ -97,12 +97,13 @@ const typeConfig = computed(() => TYPE_CONFIG[props.item.tipo] || {
         <span>Juntos</span>
       </div>
 
-      <!-- Progress badge dinámico -->
+      <!-- Progress badge dinámico (Ep., Cap. y Temporada) -->
       <div
-        v-if="isValidNumber(item.progreso) && item.progreso > 0 && typeConfig.hasProgress"
+        v-if="(isValidNumber(item.progreso) && item.progreso > 0 && typeConfig.hasProgress) || (isValidNumber(item.temporada) && item.temporada > 0)"
         class="absolute top-1.5 right-1.5 rounded bg-black/80 px-1 py-0.5 text-[9px] font-bold text-white shadow-sm backdrop-blur-sm"
       >
-        {{ typeConfig.progressShortLabel || 'Prog.' }} {{ item.progreso }}
+        <template v-if="isValidNumber(item.temporada) && item.temporada > 0">T{{ item.temporada }}<template v-if="isValidNumber(item.progreso) && item.progreso > 0"> · </template></template>
+        <template v-if="isValidNumber(item.progreso) && item.progreso > 0">{{ typeConfig.progressShortLabel || 'Prog.' }} {{ item.progreso }}</template>
       </div>
     </div>
 

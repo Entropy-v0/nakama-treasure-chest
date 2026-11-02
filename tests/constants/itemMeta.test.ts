@@ -28,6 +28,7 @@ describe('itemMeta configuration', () => {
     expect(libroConfig.creatorLabel).toBe('Autor / Escritor')
     expect(libroConfig.publisherLabel).toBe('Editorial')
     expect(libroConfig.hasBroadcastDay).toBe(false)
+    expect(libroConfig.hasSeason).toBe(false)
   })
 
   it('debe configurar correctamente Anime con día de emisión', () => {
@@ -36,6 +37,7 @@ describe('itemMeta configuration', () => {
     expect(animeConfig.hasProgress).toBe(true)
     expect(animeConfig.progressShortLabel).toBe('Ep.')
     expect(animeConfig.hasBroadcastDay).toBe(true)
+    expect(animeConfig.hasSeason).toBe(true)
   })
 
   it('debe mapear colores CSS para cada uno de los estados', () => {

@@ -86,12 +86,13 @@ const resolvedStatusColor = computed(() => {
         <ExternalLink :size="12" stroke-width="2.5" />
       </a>
 
-      <!-- Progreso badge dinámico (Ep., Cap., Pág.) -->
+      <!-- Progreso badge dinámico (Ep., Cap., Pág. y Temporada) -->
       <div
-        v-if="isValidNumber(item.progreso) && item.progreso > 0 && typeConfig.hasProgress"
+        v-if="(isValidNumber(item.progreso) && item.progreso > 0 && typeConfig.hasProgress) || (isValidNumber(item.temporada) && item.temporada > 0)"
         class="absolute top-2 right-2 rounded-md bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm backdrop-blur-sm"
       >
-        {{ typeConfig.progressShortLabel || 'Prog.' }} {{ item.progreso }}
+        <template v-if="isValidNumber(item.temporada) && item.temporada > 0">T{{ item.temporada }}<template v-if="isValidNumber(item.progreso) && item.progreso > 0"> · </template></template>
+        <template v-if="isValidNumber(item.progreso) && item.progreso > 0">{{ typeConfig.progressShortLabel || 'Prog.' }} {{ item.progreso }}</template>
       </div>
 
       <!-- Hover overlay con acciones de link y puntuación -->

@@ -19,6 +19,8 @@ export interface ItemFormState {
   portada: string
   link: string
   progreso: number | string | null
+  temporada: number | string | null
+  fecha_terminado: string | null
   estado: ItemEstado
   puntuacion: number | null
   generos: string
@@ -51,7 +53,7 @@ export function useItemForm(options: UseItemFormOptions = {}) {
   const { showAlert } = useAlert()
 
   const { crew, hasCrew } = storeToRefs(crewStore)
-  const { results: searchResults, isSearching, search: triggerMediaSearch } = useMediaSearch(450)
+  const { results: searchResults, isSearching, search: triggerMediaSearch, clearResults: clearMediaSearch } = useMediaSearch(450)
 
   const isSubmitting = ref(false)
   const shareScope = ref<'tripulacion' | 'personal'>(hasCrew.value ? 'tripulacion' : 'personal')
@@ -62,6 +64,8 @@ export function useItemForm(options: UseItemFormOptions = {}) {
     portada: '',
     link: '',
     progreso: null,
+    temporada: null,
+    fecha_terminado: null,
     estado: 'Pendiente',
     puntuacion: null,
     generos: '',
@@ -121,6 +125,8 @@ export function useItemForm(options: UseItemFormOptions = {}) {
       portada: existing.portada || '',
       link: existing.link || '',
       progreso: existing.progreso ?? null,
+      temporada: existing.temporada ?? null,
+      fecha_terminado: existing.fecha_terminado ?? null,
       estado: existing.estado,
       puntuacion: existing.puntuacion ?? null,
       generos: Array.isArray(existing.generos) ? existing.generos.join(', ') : '',
@@ -158,12 +164,17 @@ export function useItemForm(options: UseItemFormOptions = {}) {
     if (result.estudio) form.value.estudio = result.estudio
     if (result.autor) form.value.autor = result.autor
     if (result.totalEpisodios) form.value.progreso = 0
+    clearMediaSearch()
   }
 
   const selectCrewScope = () => {
     if (hasCrew.value) {
       shareScope.value = 'tripulacion'
     }
+  }
+
+  const setTodayFinishedDate = () => {
+    form.value.fecha_terminado = new Date().toISOString().split('T')[0]
   }
 
   const handleSubmit = async () => {
@@ -196,6 +207,8 @@ export function useItemForm(options: UseItemFormOptions = {}) {
         portada: portadaUrl,
         link: form.value.link?.trim() || null,
         progreso: currentConfig.value.hasProgress ? safeParseInt(form.value.progreso) : null,
+        temporada: currentConfig.value.hasSeason ? safeParseInt(form.value.temporada) : null,
+        fecha_terminado: form.value.estado === 'Completado' ? (form.value.fecha_terminado?.trim() || null) : null,
         generos: generosList,
         anio: safeParseInt(form.value.anio),
         autor: currentConfig.value.creatorLabel ? (form.value.autor?.trim() || null) : null,
@@ -261,6 +274,7 @@ export function useItemForm(options: UseItemFormOptions = {}) {
     clearSelectedFile,
     handleUrlInput,
     selectCrewScope,
+    setTodayFinishedDate,
     handleSubmit,
   }
 }

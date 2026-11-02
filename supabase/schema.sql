@@ -139,6 +139,8 @@ create table public.items (
   dia_semana text check (dia_semana is null or dia_semana in ('lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo')),
   link text,
   progreso integer default 0,
+  temporada integer,
+  fecha_terminado date,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

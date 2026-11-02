@@ -114,6 +114,7 @@ export interface TypeFormConfig {
   publisherLabel?: string
   publisherPlaceholder?: string
   hasBroadcastDay: boolean
+  hasSeason?: boolean
 }
 
 export type TypeMetaEntry = TypeFormConfig
@@ -130,6 +131,7 @@ export const TYPE_CONFIG: Record<ItemTipo, TypeFormConfig> = {
     publisherLabel: 'Estudio de animación',
     publisherPlaceholder: 'ej: MAPPA, Ufotable',
     hasBroadcastDay: true,
+    hasSeason: true,
   },
   'Manga': {
     label: 'Manga',
@@ -144,6 +146,7 @@ export const TYPE_CONFIG: Record<ItemTipo, TypeFormConfig> = {
     publisherLabel: 'Editorial / Revista',
     publisherPlaceholder: 'ej: Shueisha, Shonen Jump',
     hasBroadcastDay: true,
+    hasSeason: false,
   },
   'Serie': {
     label: 'Serie',
@@ -158,6 +161,7 @@ export const TYPE_CONFIG: Record<ItemTipo, TypeFormConfig> = {
     publisherLabel: 'Cadena / Plataforma',
     publisherPlaceholder: 'ej: HBO, Netflix',
     hasBroadcastDay: true,
+    hasSeason: true,
   },
   'Película': {
     label: 'Película',
@@ -169,6 +173,7 @@ export const TYPE_CONFIG: Record<ItemTipo, TypeFormConfig> = {
     publisherLabel: 'Distribuidora / Estudio',
     publisherPlaceholder: 'ej: Warner Bros, Studio Ghibli',
     hasBroadcastDay: false,
+    hasSeason: false,
   },
   'Libro': {
     label: 'Libro',
@@ -183,6 +188,7 @@ export const TYPE_CONFIG: Record<ItemTipo, TypeFormConfig> = {
     publisherLabel: 'Editorial',
     publisherPlaceholder: 'ej: Planeta, Penguin, Nova',
     hasBroadcastDay: false,
+    hasSeason: false,
   },
 }
 

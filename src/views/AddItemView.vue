@@ -2,7 +2,7 @@
 /**
  * AddItemView.vue — Smart Component
  * Vista orquestadora para agregar y editar items.
- * La lógica de estado, validación y almacenamiento está desacoplada en useItemForm.
+ * Layout optimizado en 2 columnas en PC (60% formulario / 40% panel multimedia sticky).
  */
 import { useItemForm } from '../composables/useItemForm'
 import { TYPE_META, ITEM_YEAR_LIMITS } from '../constants/itemMeta'
@@ -18,7 +18,7 @@ import ScopeRadioGroup from '../components/items/ScopeRadioGroup.vue'
 import MediaSearchInput from '../components/items/MediaSearchInput.vue'
 import CoverInput from '../components/items/CoverInput.vue'
 import WeekdaySelector from '../components/items/WeekdaySelector.vue'
-import { Check, Plus } from '@lucide/vue'
+import { Check, Plus, Sliders, BookOpen, Sparkles } from '@lucide/vue'
 
 const emit = defineEmits<{
   'item-added': []
@@ -44,6 +44,7 @@ const {
   clearSelectedFile,
   handleUrlInput,
   selectCrewScope,
+  setTodayFinishedDate,
   handleSubmit,
 } = useItemForm({
   onSuccess: () => emit('item-added'),
@@ -53,13 +54,13 @@ const {
 <template>
   <PageContainer
     :title="isEditing ? 'Editar contenido' : 'Agregar contenido'"
-    max-width="max-w-[1000px]"
+    max-width="max-w-[1080px]"
   >
     <form class="w-full" @submit.prevent="handleSubmit">
-      <div class="grid grid-cols-2 gap-12 max-md:grid-cols-1 max-md:gap-8">
+      <div class="grid grid-cols-12 gap-8 max-lg:grid-cols-1">
 
-        <!-- ── Columna izquierda ── -->
-        <div class="flex flex-col gap-[22px]">
+        <!-- ── Columna Principal (7 cols en PC) ── -->
+        <div class="col-span-7 flex flex-col gap-6 max-lg:col-span-12">
           <!-- Selector de Destino (Individual vs Tripulación) -->
           <ScopeRadioGroup
             v-model="shareScope"
@@ -83,118 +84,198 @@ const {
             @select-suggestion="selectSuggestion"
           />
 
-          <!-- Estado -->
-          <div class="flex flex-col gap-2">
-            <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary">Estado</label>
-            <StatusSelector v-model="form.estado" />
+          <!-- ── Tarjeta 1: Mi Seguimiento ── -->
+          <div class="flex flex-col gap-5 rounded-2xl border border-white/5 bg-bg-surface/60 p-5 shadow-sm">
+            <div class="flex items-center gap-2 border-b border-white/5 pb-3">
+              <Sliders :size="16" class="text-green" />
+              <h3 class="text-xs font-bold uppercase tracking-[1px] text-text-secondary">Mi Seguimiento</h3>
+            </div>
+
+            <!-- Estado -->
+            <div class="flex flex-col gap-2">
+              <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary">Estado</label>
+              <StatusSelector v-model="form.estado" />
+            </div>
+
+            <!-- Puntuación -->
+            <div class="flex flex-col gap-2">
+              <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary">Puntuación</label>
+              <ScoreSelector v-model="form.puntuacion" />
+            </div>
+
+            <!-- Temporada y Progreso en 2 columnas -->
+            <div
+              v-if="currentConfig.hasProgress"
+              class="grid gap-3"
+              :class="currentConfig.hasSeason ? 'grid-cols-2 max-sm:grid-cols-1' : 'grid-cols-1'"
+            >
+              <!-- Temporada (solo Anime/Serie) -->
+              <FormInput
+                v-if="currentConfig.hasSeason"
+                id="temporada"
+                v-model="form.temporada"
+                type="number"
+                min="0"
+                label="Temporada actual"
+                hint="(en la que vas)"
+                placeholder="ej: 1"
+              />
+
+              <!-- Progreso / Capítulo, Episodio o Página -->
+              <FormInput
+                id="progreso"
+                v-model="form.progreso"
+                type="number"
+                min="0"
+                :label="currentConfig.progressLabel || 'Progreso actual'"
+                hint="(en el que vas)"
+                :placeholder="currentConfig.progressPlaceholder || 'ej: 1'"
+              />
+            </div>
+
+            <!-- Emisión y Fecha de Finalización -->
+            <div
+              v-if="form.estado === 'Completado' || currentConfig.hasBroadcastDay"
+              class="grid gap-3"
+              :class="(form.estado === 'Completado' && currentConfig.hasBroadcastDay) ? 'grid-cols-2 max-sm:grid-cols-1' : 'grid-cols-1'"
+            >
+              <!-- Día de emisión semanal (Calendario) -->
+              <WeekdaySelector
+                v-if="currentConfig.hasBroadcastDay"
+                v-model="form.dia_semana"
+              />
+
+              <!-- Fecha de cuando se terminó (solo si Completado) -->
+              <FormInput
+                v-if="form.estado === 'Completado'"
+                id="fecha_terminado"
+                v-model="form.fecha_terminado"
+                type="date"
+                label="Fecha finalizado"
+                hint="(opcional)"
+              >
+                <template #label-extra>
+                  <button
+                    type="button"
+                    class="text-[11px] font-bold text-green hover:underline cursor-pointer transition-colors"
+                    title="Poner la fecha de hoy"
+                    @click="setTodayFinishedDate"
+                  >
+                    Hoy
+                  </button>
+                </template>
+              </FormInput>
+            </div>
           </div>
 
-          <!-- Puntuación -->
-          <div class="flex flex-col gap-2">
-            <label class="text-[13px] font-bold uppercase tracking-[0.8px] text-text-secondary">Puntuación</label>
-            <ScoreSelector v-model="form.puntuacion" />
-          </div>
+          <!-- ── Tarjeta 2: Ficha Técnica & Metadatos ── -->
+          <div class="flex flex-col gap-4.5 rounded-2xl border border-white/5 bg-bg-surface/60 p-5 shadow-sm">
+            <div class="flex items-center gap-2 border-b border-white/5 pb-3">
+              <BookOpen :size="16" class="text-green" />
+              <h3 class="text-xs font-bold uppercase tracking-[1px] text-text-secondary">Ficha Técnica & Notas</h3>
+            </div>
 
-          <!-- Día de emisión semanal (Calendario) -->
-          <WeekdaySelector
-            v-if="currentConfig.hasBroadcastDay"
-            v-model="form.dia_semana"
-          />
+            <!-- Año y Géneros en 2 columnas -->
+            <div class="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+              <!-- Año -->
+              <FormInput
+                id="anio"
+                v-model="form.anio"
+                type="number"
+                :min="ITEM_YEAR_LIMITS.MIN"
+                :max="ITEM_YEAR_LIMITS.MAX"
+                label="Año"
+                placeholder="ej: 2024"
+              />
 
-          <!-- Progreso / Capítulo, Episodio o Página -->
-          <FormInput
-            v-if="currentConfig.hasProgress"
-            id="progreso"
-            v-model="form.progreso"
-            type="number"
-            min="0"
-            :label="currentConfig.progressLabel || 'Progreso actual'"
-            hint="(en el que vas)"
-            :placeholder="currentConfig.progressPlaceholder || 'ej: 1'"
-          />
+              <!-- Géneros -->
+              <FormInput
+                id="generos"
+                v-model="form.generos"
+                type="text"
+                label="Géneros"
+                hint="(por coma)"
+                placeholder="Acción, Fantasía..."
+              />
+            </div>
 
-          <!-- Año -->
-          <FormInput
-            id="anio"
-            v-model="form.anio"
-            type="number"
-            :min="ITEM_YEAR_LIMITS.MIN"
-            :max="ITEM_YEAR_LIMITS.MAX"
-            label="Año"
-            placeholder="ej: 2024"
-          />
+            <!-- Creador / Autor y Estudio / Editorial en 2 columnas -->
+            <div
+              v-if="currentConfig.creatorLabel || currentConfig.publisherLabel"
+              class="grid gap-3"
+              :class="(currentConfig.creatorLabel && currentConfig.publisherLabel) ? 'grid-cols-2 max-sm:grid-cols-1' : 'grid-cols-1'"
+            >
+              <!-- Creador / Autor / Mangaka -->
+              <FormInput
+                v-if="currentConfig.creatorLabel"
+                id="autor"
+                v-model="form.autor"
+                type="text"
+                :label="currentConfig.creatorLabel"
+                :placeholder="currentConfig.creatorPlaceholder"
+              />
 
-          <!-- Creador / Autor / Mangaka / Artista -->
-          <FormInput
-            v-if="currentConfig.creatorLabel"
-            id="autor"
-            v-model="form.autor"
-            type="text"
-            :label="currentConfig.creatorLabel"
-            :placeholder="currentConfig.creatorPlaceholder"
-          />
+              <!-- Publicador / Estudio / Editorial -->
+              <FormInput
+                v-if="currentConfig.publisherLabel"
+                id="estudio"
+                v-model="form.estudio"
+                type="text"
+                :label="currentConfig.publisherLabel"
+                :placeholder="currentConfig.publisherPlaceholder"
+              />
+            </div>
 
-          <!-- Publicador / Estudio / Editorial / Sello -->
-          <FormInput
-            v-if="currentConfig.publisherLabel"
-            id="estudio"
-            v-model="form.estudio"
-            type="text"
-            :label="currentConfig.publisherLabel"
-            :placeholder="currentConfig.publisherPlaceholder"
-          />
-
-          <!-- Géneros -->
-          <FormInput
-            id="generos"
-            v-model="form.generos"
-            type="text"
-            label="Géneros"
-            hint="(separados por coma)"
-            placeholder="Acción, Aventura, Romance..."
-          />
-        </div>
-
-        <!-- ── Columna derecha ── -->
-        <div class="flex flex-col gap-[22px]">
-          <!-- Portada / Carátula (Subida de archivo o URL) -->
-          <CoverInput
-            :url="form.portada"
-            :selected-file-name="selectedFileName"
-            :has-file="Boolean(selectedFile || previewUrl)"
-            @update:url="val => { form.portada = val; handleUrlInput(); }"
-            @file-change="handleFileChange"
-            @clear-file="clearSelectedFile"
-          />
-
-          <!-- Enlace web / Link -->
-          <FormInput
-            id="link"
-            v-model="form.link"
-            type="url"
-            label="Enlace web"
-            hint="(para ver o leer)"
-            placeholder="https://ejemplo.com/ver-contenido..."
-          />
-
-          <!-- Cover Preview -->
-          <CoverPreview
-            :url="activeCoverUrl"
-            :type-meta="TYPE_META[form.tipo] || {}"
-          />
-
-          <!-- Descripción -->
-          <div class="flex flex-1 flex-col">
+            <!-- Descripción / Sinopsis -->
             <FormTextarea
               id="nota"
               v-model="form.nota"
-              label="Descripción"
+              label="Descripción o notas personales"
               placeholder="Sinopsis, resumen, impresiones o detalles de la obra..."
-              :rows="5"
+              :rows="4"
+            />
+          </div>
+        </div>
+
+        <!-- ── Columna Lateral (5 cols en PC, sticky) ── -->
+        <div class="col-span-5 flex flex-col gap-6 lg:sticky lg:top-6 lg:self-start max-lg:col-span-12">
+          <!-- Tarjeta Multimedia (Preview + Input de Portada + Enlace) -->
+          <div class="flex flex-col gap-4.5 rounded-2xl border border-white/5 bg-bg-surface/60 p-5 shadow-sm">
+            <div class="flex items-center gap-2 border-b border-white/5 pb-3">
+              <Sparkles :size="16" class="text-green" />
+              <h3 class="text-xs font-bold uppercase tracking-[1px] text-text-secondary">Portada & Enlaces</h3>
+            </div>
+
+            <!-- Preview de Portada -->
+            <div class="mx-auto w-full max-w-[220px]">
+              <CoverPreview
+                :url="activeCoverUrl"
+                :type-meta="TYPE_META[form.tipo] || {}"
+              />
+            </div>
+
+            <!-- Selector de archivo o URL de portada -->
+            <CoverInput
+              :url="form.portada"
+              :selected-file-name="selectedFileName"
+              :has-file="Boolean(selectedFile || previewUrl)"
+              @update:url="val => { form.portada = val; handleUrlInput(); }"
+              @file-change="handleFileChange"
+              @clear-file="clearSelectedFile"
+            />
+
+            <!-- Enlace web / Link -->
+            <FormInput
+              id="link"
+              v-model="form.link"
+              type="url"
+              label="Enlace web"
+              hint="(para ver o leer)"
+              placeholder="https://ejemplo.com/ver..."
             />
           </div>
 
-          <!-- Submit -->
+          <!-- Botón de Envío Principal -->
           <BaseButton
             type="submit"
             variant="primary"
@@ -202,7 +283,7 @@ const {
             block
             :loading="isSubmitting"
             loading-text="Guardando..."
-            class="mt-auto"
+            class="shadow-[0_4px_24px_rgba(40,167,69,0.25)]"
           >
             <template #icon-left>
               <Check v-if="isEditing" :size="18" stroke-width="2.5" />
@@ -211,6 +292,7 @@ const {
             {{ isEditing ? 'Guardar cambios' : 'Agregar a la colección' }}
           </BaseButton>
         </div>
+
       </div>
     </form>
   </PageContainer>
