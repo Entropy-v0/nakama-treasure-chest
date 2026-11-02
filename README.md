@@ -1,6 +1,6 @@
-# 🏴‍☠️ Nakama Treasure Chest - Gestor de Contenido
+# 🏴‍☠️ Nakama Treasure Chest - Content Manager
 
-> Plataforma web moderna e íntima diseñada para organizar, rastrear y disfrutar de nuestras colecciones multimedia (Anime, Manga, Series, Películas y Libros), compartiendo historias y momentos especiales en pareja.
+> A modern and intimate web platform designed to organize, track, and enjoy our multimedia collections (Anime, Manga, TV Series, Movies, and Books), sharing stories and special moments together as a couple.
 
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.5+-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -11,172 +11,172 @@
 [![Vitest](https://img.shields.io/badge/Vitest-Tested-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Vercel](https://img.shields.io/badge/Vercel-Live%20Demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://nakama-gestor-personal.vercel.app)
 
-🌐 **Demo en Vivo:** [https://nakama-gestor-personal.vercel.app](https://nakama-gestor-personal.vercel.app)
+🌐 **Live Demo:** [https://nakama-gestor-personal.vercel.app](https://nakama-gestor-personal.vercel.app)
 
 ---
 
-## 📖 Tabla de Contenidos
+## 📖 Table of Contents
 
-- [Características Principales](#-características-principales)
-- [Tecnologías y Stack](#-tecnologías-y-stack)
-- [Requisitos Previos](#-requisitos-previos)
-- [Instalación y Configuración](#-instalación-y-configuración)
-- [Uso y Scripts Disponibles](#-uso-y-scripts-disponibles)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Dedicatoria](#-dedicatoria)
-
----
-
-## ✨ Características Principales
-
-- 🎬 **Gestión Multimedia Multi-categoría:** Seguimiento detallado de Anime, Manga, Series, Películas y Libros. Controla estados (*Viendo*, *Pendiente*, *Completado*, *En Pausa*, *Abandonado*), progreso de capítulos, valoraciones personales, notas y portadas.
-- 👥 **Espacio Compartido (Tripulación):** Gestión sincronizada de listas y recomendaciones conjuntas para disfrutar del contenido en pareja.
-- 📅 **Calendario Semanal de Emisiones:** Organización de series y animes por día de la semana (lunes a domingo) para no perderse ningún estreno ni maratón juntos.
-- 🔍 **Búsqueda Integrada de Medios:** Localiza títulos rápidamente con autocompletado y precarga de metadatos, junto con compresión optimizada de portadas.
-- 📊 **Panel de Control y Métricas:** Dashboard interactivo con estadísticas de progreso, actividad reciente y resumen visual de la colección.
-- 🛡️ **Seguridad y Persistencia:** Autenticación de usuarios vía Supabase Auth y protección de datos a nivel de fila con PostgreSQL Row Level Security (RLS).
-- ⚡ **Modo Mock / Aislamiento Local:** Capacidad de ejecutar y probar la aplicación en local con datos simulados sin depender de una base de datos activa (`VITE_USE_MOCK=true`).
+- [Key Features](#-key-features)
+- [Tech Stack](#️-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation & Setup](#-installation--setup)
+- [Usage & Available Scripts](#-usage--available-scripts)
+- [Project Structure](#-project-structure)
+- [Dedication](#️-dedication)
 
 ---
 
-## 🛠️ Tecnologías y Stack
+## ✨ Key Features
 
-- **Frontend:** [Vue 3](https://vuejs.org/) (Composition API con `<script setup>`) y [TypeScript](https://www.typescriptlang.org/)
-- **Gestión de Estado:** [Pinia](https://pinia.vuejs.org/)
-- **Enrutamiento:** [Vue Router](https://router.vuejs.org/)
-- **Estilos e Iconos:** [Tailwind CSS v4](https://tailwindcss.com/) y [Lucide Icons](https://lucide.dev/) (`@lucide/vue`)
-- **Backend as a Service (BaaS):** [Supabase](https://supabase.com/) (PostgreSQL, Supabase Auth y Storage)
-- **Herramienta de Construcción:** [Vite](https://vitejs.dev/)
-- **Testing y Calidad de Código:** [Vitest](https://vitest.dev/), [ESLint](https://eslint.org/), [Prettier](https://prettier.io/) y [vue-tsc](https://github.com/vuejs/language-tools)
-- **Despliegue y Hosting:** [Vercel](https://vercel.com/)
-- **Gestor de Paquetes:** [pnpm](https://pnpm.io/) (o `npm` / `yarn`)
+- 🎬 **Multi-Category Media Tracking:** Detailed tracking for Anime, Manga, TV Series, Movies, and Books. Manage statuses (*Watching*, *Plan to Watch*, *Completed*, *On Hold*, *Dropped*), episode/chapter progress, personal ratings, notes, and cover art.
+- 👥 **Shared Space (Crew):** Synchronized list management and joint recommendations to enjoy content together as a couple.
+- 📅 **Weekly Release Calendar:** Organize ongoing series and anime by day of the week (Monday through Sunday) so you never miss a premiere or marathon together.
+- 🔍 **Integrated Media Search:** Quickly find titles with autocomplete and metadata preloading, paired with optimized client-side cover image compression.
+- 📊 **Dashboard & Metrics:** Interactive dashboard featuring progress statistics, recent activity, and a visual overview of your collection.
+- 🛡️ **Security & Persistence:** User authentication powered by Supabase Auth and row-level data protection via PostgreSQL Row Level Security (RLS).
+- ⚡ **Mock Mode / Local Isolation:** Ability to run and test the application locally with simulated data without relying on an active database (`VITE_USE_MOCK=true`).
 
 ---
 
-## 📋 Requisitos Previos
+## 🛠️ Tech Stack
 
-Antes de comenzar, asegúrate de contar con las siguientes herramientas instaladas:
-
-- **Node.js:** Versión 18.0 o superior (recomendado Node.js 20+ LTS).
-- **Gestor de paquetes:** [pnpm](https://pnpm.io/) (recomendado), `npm` o `yarn`.
-- **Cuenta de Supabase:** Proyecto en [Supabase](https://supabase.com/) (opcional si se utiliza el modo mock).
+- **Frontend:** [Vue 3](https://vuejs.org/) (Composition API with `<script setup>`) and [TypeScript](https://www.typescriptlang.org/)
+- **State Management:** [Pinia](https://pinia.vuejs.org/)
+- **Routing:** [Vue Router](https://router.vuejs.org/)
+- **Styling & Icons:** [Tailwind CSS v4](https://tailwindcss.com/) and [Lucide Icons](https://lucide.dev/) (`@lucide/vue`)
+- **Backend as a Service (BaaS):** [Supabase](https://supabase.com/) (PostgreSQL, Supabase Auth, and Storage)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Testing & Code Quality:** [Vitest](https://vitest.dev/), [ESLint](https://eslint.org/), [Prettier](https://prettier.io/), and [vue-tsc](https://github.com/vuejs/language-tools)
+- **Deployment & Hosting:** [Vercel](https://vercel.com/)
+- **Package Manager:** [pnpm](https://pnpm.io/) (or `npm` / `yarn`)
 
 ---
 
-## 🚀 Instalación y Configuración
+## 📋 Prerequisites
 
-Sigue estos pasos para clonar y ejecutar el proyecto en tu entorno local:
+Before getting started, make sure you have the following tools installed:
 
-### 1. Clonar el repositorio
+- **Node.js:** Version 18.0 or higher (Node.js 20+ LTS recommended).
+- **Package Manager:** [pnpm](https://pnpm.io/) (recommended), `npm`, or `yarn`.
+- **Supabase Account:** A project on [Supabase](https://supabase.com/) (optional if using mock mode).
+
+---
+
+## 🚀 Installation & Setup
+
+Follow these steps to clone and run the project in your local environment:
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Entropy-v0/nakama-treasure-chest.git
 cd nakama-treasure-chest
 ```
 
-### 2. Instalar dependencias
+### 2. Install dependencies
 
 ```bash
-# Con pnpm (recomendado)
+# Using pnpm (recommended)
 pnpm install
 
-# Con npm
+# Using npm
 npm install
 ```
 
-### 3. Configurar variables de entorno
+### 3. Configure environment variables
 
-Copia la plantilla de entorno a un archivo local:
+Copy the environment template to a local file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Configura tus variables en `.env.local` según el entorno:
+Configure your variables in `.env.local` according to your environment:
 
 ```env
-# Configuración de Supabase (Producción / Backend real)
-VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu-anon-key-aqui
+# Supabase Configuration (Production / Live Backend)
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
-# Modo Mock / Aislamiento local (true = usa datos mock sin conectar a Supabase)
+# Mock Mode / Local Isolation (true = uses mock data without connecting to Supabase)
 VITE_USE_MOCK=false
 ```
 
-### 4. Inicializar la base de datos (solo para Supabase real)
+### 4. Initialize the database (for live Supabase only)
 
-Si utilizas un backend real de Supabase, ejecuta el script ubicado en [supabase/schema.sql](file:///home/entropy/Olimpo/Proyectos/Proyectos-Personales/Nakama-Gestor-Contenido/supabase/schema.sql) en el **SQL Editor** de tu consola de Supabase para generar las tablas, relaciones y políticas de RLS necesarias.
+If you are using a live Supabase backend, run the script located at `supabase/schema.sql` in the **SQL Editor** of your Supabase dashboard to generate the required tables, relationships, and RLS policies.
 
 ---
 
-## 💻 Uso y Scripts Disponibles
+## 💻 Usage & Available Scripts
 
-El proyecto cuenta con scripts configurados para el desarrollo diario y mantenimiento:
+The project includes preconfigured scripts for daily development and maintenance:
 
-| Comando | Descripción |
+| Command | Description |
 | :--- | :--- |
-| `pnpm dev` | Inicia el servidor de desarrollo local con recarga rápida (HMR). |
-| `pnpm build` | Compila y optimiza la aplicación para producción en la carpeta `dist/`. |
-| `pnpm preview` | Previsualiza localmente la compilación de producción. |
-| `pnpm test` | Ejecuta la suite de pruebas unitarias con Vitest. |
-| `pnpm test:watch` | Ejecuta las pruebas unitarias en modo interactivo/vigilante. |
-| `pnpm type-check` | Ejecuta la comprobación estática de tipos con `vue-tsc`. |
-| `pnpm lint` | Analiza el código fuente con ESLint. |
-| `pnpm format` | Formatea el código con Prettier. |
+| `pnpm dev` | Starts the local development server with Hot Module Replacement (HMR). |
+| `pnpm build` | Compiles and optimizes the application for production into the `dist/` folder. |
+| `pnpm preview` | Locally previews the production build. |
+| `pnpm test` | Runs the unit test suite with Vitest. |
+| `pnpm test:watch` | Runs unit tests in interactive watch mode. |
+| `pnpm type-check` | Runs static type checking with `vue-tsc`. |
+| `pnpm lint` | Analyzes source code with ESLint. |
+| `pnpm format` | Formats source code with Prettier. |
 
-### Iniciar entorno de desarrollo
+### Start the development environment
 
 ```bash
 pnpm dev
 ```
 
-La aplicación estará accesible por defecto en `http://localhost:5173`.
+The application will be accessible by default at `http://localhost:5173`.
 
 ---
 
-## 📂 Estructura del Proyecto
+## 📂 Project Structure
 
-El código está estructurado bajo una arquitectura limpia y modular:
+The codebase is structured under a clean and modular architecture:
 
 ```text
 nakama-treasure-chest/
-├── docs/                   # Documentación técnica, arquitectura y notas
-├── public/                 # Archivos estáticos públicos
+├── docs/                   # Technical documentation, architecture, and notes
+├── public/                 # Public static assets
 ├── src/
-│   ├── assets/             # Recursos multimedia e imágenes
-│   ├── components/         # Componentes organizados por dominio
-│   │   ├── auth/           # Formularios y modales de autenticación y perfil
-│   │   ├── calendar/       # Filtros y vistas de calendario semanal
-│   │   ├── collection/     # Tarjetas, grillas y barras de búsqueda del catálogo
-│   │   ├── dashboard/      # Tarjetas de métricas y widgets de resumen
-│   │   ├── items/          # Selectores de tipo, estado, días y modales de detalle
-│   │   ├── layout/         # Barra lateral, navegación y contenedores base
-│   │   └── ui/             # Componentes base reutilizables (Botones, Inputs, Modales)
-│   ├── composables/        # Hooks reactivos reutilizables (useItemForm, useCollectionData, etc.)
-│   ├── constants/          # Constantes y metadatos de elementos
-│   ├── data/               # Datos mock para desarrollo local
-│   ├── router/             # Definición y guardas de rutas con Vue Router
-│   ├── services/           # Clientes HTTP, integración con Supabase y APIs externas
-│   ├── stores/             # Gestión de estado global con Pinia (auth, items, crew)
-│   ├── types/              # Contratos y tipos TypeScript
-│   ├── utils/              # Validadores, compresor de imágenes y utilidades
-│   ├── views/              # Vistas principales de página
-│   ├── App.vue             # Componente raíz
-│   └── main.ts             # Punto de entrada de la aplicación
-├── supabase/               # Esquemas SQL, migraciones y configuración de Supabase
-├── tests/                  # Pruebas unitarias con Vitest
-├── .env.example            # Plantilla de variables de entorno
-└── package.json            # Dependencias y scripts del proyecto
+│   ├── assets/             # Media resources and images
+│   ├── components/         # Domain-organized components
+│   │   ├── auth/           # Authentication and profile forms and modals
+│   │   ├── calendar/       # Weekly release calendar filters and views
+│   │   ├── collection/     # Catalog cards, grids, and search bars
+│   │   ├── dashboard/      # Metric cards and summary widgets
+│   │   ├── items/          # Type, status, and day selectors, and detail modals
+│   │   ├── layout/         # Sidebar, navigation, and base layout containers
+│   │   └── ui/             # Reusable UI primitives (Buttons, Inputs, Modals)
+│   ├── composables/        # Reusable reactive hooks (useItemForm, useCollectionData, etc.)
+│   ├── constants/          # Item constants and metadata
+│   ├── data/               # Mock data for local development
+│   ├── router/             # Route definitions and navigation guards with Vue Router
+│   ├── services/           # HTTP clients, Supabase integration, and external APIs
+│   ├── stores/             # Global state management with Pinia (auth, items, crew)
+│   ├── types/              # TypeScript contracts and type definitions
+│   ├── utils/              # Validators, image compressor, and helper utilities
+│   ├── views/              # Top-level page views
+│   ├── App.vue             # Root component
+│   └── main.ts             # Application entry point
+├── supabase/               # SQL schemas, migrations, and Supabase configuration
+├── tests/                  # Unit tests with Vitest
+├── .env.example            # Environment variables template
+└── package.json            # Project dependencies and scripts
 ```
 
 ---
 
-## ❤️ Dedicatoria
+## ❤️ Dedication
 
 <div align="center">
 
-> *"Entre tantas historias, mundos por descubrir y aventuras por vivir...  
-> **mi mayor tesoro eres tú.**"*  
+> *"Among so many stories, worlds to discover, and adventures to live...  
+> **my greatest treasure is you.**"*  
 
 
 </div>
