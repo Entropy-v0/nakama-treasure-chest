@@ -80,12 +80,12 @@ describe('compareByEstadoPriority', () => {
     const items = [
       make(1, 'Completado'),
       make(2, 'Abandonado'),
-      make(3, 'En Pausa'),
-      make(4, 'Pendiente'),
+      make(3, 'Pendiente'),
+      make(4, 'En Pausa'),
       make(5, 'Viendo'),
     ]
     expect([...items].sort(compareByEstadoPriority).map(i => i.estado)).toEqual([
-      'Viendo', 'Pendiente', 'En Pausa', 'Completado', 'Abandonado',
+      'Viendo', 'En Pausa', 'Pendiente', 'Completado', 'Abandonado',
     ])
   })
 

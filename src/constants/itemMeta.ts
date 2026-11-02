@@ -27,8 +27,8 @@ export const ESTADOS_FILTER: Array<ItemEstado | 'Todos'> = ['Todos', 'Viendo', '
 /* ── Prioridad de estado para ordenar la colección (menor = aparece primero) ── */
 export const ESTADO_PRIORITY: Record<ItemEstado, number> = {
   'Viendo': 1,
-  'Pendiente': 2,
-  'En Pausa': 3,
+  'En Pausa': 2,
+  'Pendiente': 3,
   'Completado': 4,
   'Abandonado': 5,
 }
